@@ -1,19 +1,10 @@
-// models/MeetingParticipant.js
+// models/Friend.js
 module.exports = (sequelize, DataTypes) => {
-  const MeetingParticipant = sequelize.define('MeetingParticipant', {
+  const Friend = sequelize.define('Friend', {
     id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
-    },
-    meeting_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Meetings',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
     },
     user_id: {
       type: DataTypes.BIGINT,
@@ -24,16 +15,33 @@ module.exports = (sequelize, DataTypes) => {
       },
       onDelete: 'CASCADE',
     },
+    friend_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+    },
+    type: {
+      type: DataTypes.ENUM('NORMAL', 'SPECIAL'),
+      allowNull: false,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   }, {
-    tableName: 'MeetingParticipants',
+    tableName: 'Friends',
     timestamps: false,
     indexes: [
       {
         unique: true,
-        fields: ['meeting_id', 'user_id'],
+        fields: ['user_id', 'friend_id'],
       },
     ],
   });
 
-  return MeetingParticipant;
+  return Friend;
 };
