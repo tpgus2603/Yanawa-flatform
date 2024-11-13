@@ -1,25 +1,23 @@
-const MessageSchema = new Schema({
+// schemas/Message.js
+
+const mongoose = require('mongoose');
+
+const MessageSchema = new mongoose.Schema({
   chat_room_id: {
-    type: mongoose.Schema.Types.BigInt,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'ChatRoom',
     required: true,
   },
   sender_id: {
-    type: mongoose.Schema.Types.BigInt,
-    ref: 'User',
+    type: Number, // SQL의 Users 테이블 ID 참조
     required: true,
   },
   message: {
     type: String,
     required: true,
   },
-  sent_at: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  timestamps: { createdAt: 'sent_at', updatedAt: false },
 });
-
-// 인덱스 추가하여 조회 성능 향상
-MessageSchema.index({ chat_room_id: 1, sent_at: -1 });
 
 module.exports = mongoose.model('Message', MessageSchema);
