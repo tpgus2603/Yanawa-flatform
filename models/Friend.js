@@ -11,7 +11,7 @@ const Friend = sequelize.define('Friend', {
   },
 }, {
   tableName: 'Friends',
-  timestamps: false,
+  timestamps: true,
 });
 
 Friend.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
