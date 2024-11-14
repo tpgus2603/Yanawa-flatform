@@ -7,7 +7,7 @@ const User = require('./User');
 
 const MeetingParticipant = sequelize.define('MeetingParticipant', {}, {
   tableName: 'MeetingParticipants',
-  timestamps: true,
+  timestamps: false,
 });
 
 MeetingParticipant.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });

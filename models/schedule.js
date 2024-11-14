@@ -19,7 +19,7 @@ const Schedule = sequelize.define('Schedule', {
   },
 }, {
   tableName: 'Schedules',
-  timestamps: true,
+  timestamps: false,
 });
 
 Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
