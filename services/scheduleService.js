@@ -32,7 +32,7 @@ class schedulService {
                 throw new Error('Schedule overlaps with existing schedule');
             }
 
-            const scehduleData = {
+            const scheduleData = {
                 user_id: userId,
                 title,
                 start_time,
@@ -41,7 +41,7 @@ class schedulService {
                 expiry_date: is_fixed ? null : this.getNextMonday()
             };
 
-            const schedule = await Schedule.create(scehduleData);
+            const schedule = await Schedule.create(scheduleData);
             return schedule;
         } catch (error) {
             throw new Error(`Failed to create schedule: ${error.message}`);
@@ -58,7 +58,7 @@ class schedulService {
             });
 
             if (!schedule) {
-                throw new Error('schedule not found');
+                throw new Error('Schedule not found');
             }
 
             // 일정 시작 시간 - 종료 시간 유효성 검사
@@ -92,7 +92,7 @@ class schedulService {
             });
 
             if (!schedule) {
-                throw new Error('schedule not found');
+                throw new Error('Schedule not found');
             }
 
             return true;
