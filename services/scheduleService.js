@@ -19,6 +19,8 @@ class schedulService {
      * 사용자 스케줄 생성
      */
     async createSchedule({ userId, title, start_time, end_time, is_fixed }) {
+        const transaction = await Schedule.sequelize.transaction();
+
         try {
 
             // 일정 시작 시간 - 종료 시간 유효성 검사
@@ -41,9 +43,11 @@ class schedulService {
                 expiry_date: is_fixed ? null : this.getNextMonday()
             };
 
-            const schedule = await Schedule.create(scheduleData);
+            const schedule = await Schedule.create(scheduleData, { transaction });
+            await transaction.commit();
             return schedule;
         } catch (error) {
+            await transaction.rollback();
             throw new Error(`Failed to create schedule: ${error.message}`);
         }
     }
@@ -52,6 +56,8 @@ class schedulService {
      * 사용자 스케줄 수정
      */
     async updateSchedule(id, userId, updateData) {
+        const transaction = await Schedule.sequelize.transaction();
+
         try {
             const schedule = await Schedule.findOne({
                 where: { id, user_id: userId }
@@ -75,9 +81,11 @@ class schedulService {
             // 스케줄 타입 변경하지 못하도록 update값 삭제 -> 기존값 유지
             delete updateData.is_fixed;
             
-            await schedule.update(updateData);
+            await schedule.update(updateData, { transaction });
+            await transaction.commit();
             return schedule;
         } catch (error) {
+            await transaction.rollback();
             throw new Error(`Failed to update schedule: ${error.message}`);
         }
     }
@@ -86,17 +94,22 @@ class schedulService {
      * 사용자 스케줄 삭제
      */
     async deleteSchedule(id, userId) {
+        const transaction = await Schedule.sequelize.transaction();
+
         try {
             const schedule = await Schedule.destroy({
-                where: { id, user_id: userId }
+                where: { id, user_id: userId },
+                transaction
             });
 
             if (!schedule) {
                 throw new Error('Schedule not found');
             }
 
+            await transaction.commit();
             return true;
         } catch (error) {
+            await transaction.rollback();
             throw new Error(`Failed to delete schedule: ${error.message}`);
         }
     }
