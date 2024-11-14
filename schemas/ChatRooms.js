@@ -1,14 +1,14 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+// schemas/ChatRoom.js
 
-const ChatRoomSchema = new Schema({
+const mongoose = require('mongoose');
+
+const ChatRoomSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
   meeting_id: {
-    type: mongoose.Schema.Types.BigInt, // 관계형 DB의 Meetings.id와 연동
-    ref: 'Meeting',
+    type: Number, // SQL의 Meetings 테이블 ID 참조
     default: null,
   },
   type: {
@@ -17,18 +17,11 @@ const ChatRoomSchema = new Schema({
     required: true,
   },
   created_by: {
-    type: mongoose.Schema.Types.BigInt, // 관계형 DB의 Users.id와 연동
-    ref: 'User',
+    type: Number, // SQL의 Users 테이블 ID 참조
     required: true,
   },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now,
-  },
+}, {
+  timestamps: true, // createdAt, updatedAt 자동 관리
 });
 
 module.exports = mongoose.model('ChatRoom', ChatRoomSchema);

@@ -1,39 +1,19 @@
 // models/MeetingParticipant.js
-module.exports = (sequelize, DataTypes) => {
-  const MeetingParticipant = sequelize.define('MeetingParticipant', {
-    id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    meeting_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Meetings',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-    },
-    user_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-    },
-  }, {
-    tableName: 'MeetingParticipants',
-    timestamps: false,
-    indexes: [
-      {
-        unique: true,
-        fields: ['meeting_id', 'user_id'],
-      },
-    ],
-  });
 
-  return MeetingParticipant;
-};
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/sequelize');
+const Meeting = require('./Meeting');
+const User = require('./User');
+
+const MeetingParticipant = sequelize.define('MeetingParticipant', {}, {
+  tableName: 'MeetingParticipants',
+  timestamps: false,
+});
+
+MeetingParticipant.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
+Meeting.hasMany(MeetingParticipant, { foreignKey: 'meeting_id', as: 'participants' });
+
+MeetingParticipant.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipations' });
+
+module.exports = MeetingParticipant;
