@@ -36,4 +36,27 @@ class schedulService {
         }
     }
 
+    /**
+     * 사용자 스케줄 수정
+     */
+    async updateSchedule(id, userId, updateData) {
+        try {
+            const schedule = await Schedule.findOne({
+                where: { id, user_id: userId }
+            });
+
+            if (!schedule) {
+                throw new Error('schedule not found');
+            }
+
+            // 스케줄 타입 변경하지 못하도록 update값 삭제 -> 기존값 유지
+            delete updateData.is_fixed;
+            
+            await schedule.update(updateData);
+            return schedule;
+        } catch (error) {
+            throw new Error(`Failed to update schedule: ${error.message}`);
+        }
+    }
+
 }
