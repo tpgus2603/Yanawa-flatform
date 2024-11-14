@@ -103,6 +103,37 @@ class schedulService {
             throw new Error(`Failed to fetch schedules: ${error.message}`);
         }
     }
+
+    /**
+     * 해당 사용자의 특정 스케줄 조회
+     */
+    async getScheduleById(id, userId) {
+        try {
+            const schedule = await Schedule.findOne({
+                where: {
+                    id,
+                    user_id: userId,
+                    [Op.or]: [
+                        { is_fixed: true },
+                        {
+                            is_fixed: false,
+                            expiry_date: {
+                                [Op.gt]: new Date()
+                            }
+                        }
+                    ]
+                }
+            });
+            
+            if (!schedule) {
+                throw new Error('Schedule not found');
+            }
+            
+            return schedule;
+        } catch (error) {
+            throw new Error(`Failed to fetch schedule: ${error.message}`);
+        }
+    }
     
 
 }
