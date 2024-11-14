@@ -78,5 +78,31 @@ class schedulService {
         }
     }
     
+    /**
+     * 해당 사용자의 스케줄 정보 조회
+     */
+    async getAllSchedules(userId) {
+        try {
+            const schedules = await Schedule.findAll({
+                where: {
+                    user_id: userId,
+                    [Op.or]: [
+                        { is_fixed: true },
+                        {
+                            is_fixed: false,
+                            expiry_date: {
+                                [Op.gt]: new Date()
+                            }
+                        }
+                    ]
+                },
+                order: [['start_time', 'ASC']]
+            });
+            return schedules;
+        } catch (error) {
+            throw new Error(`Failed to fetch schedules: ${error.message}`);
+        }
+    }
+    
 
 }
