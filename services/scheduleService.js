@@ -135,5 +135,25 @@ class schedulService {
         }
     }
     
-
+    
+    /**
+     * 만료된 유동 스케줄 정리 -> utils에 cron job 추가해서 실행하도록 설정
+     */
+    async cleanExpiredSchedules() {
+        try {
+            await Schedule.destroy({
+                where: {
+                    is_fixed: false,
+                    expiry_date: {
+                        [Op.lte]: new Date()
+                    }
+                }
+            });
+        } catch (error) {
+            throw new Error(`Failed to clean expired schedules: ${error.message}`);
+        }
+    }
 }
+
+module.exports = new scheduleService();
+
