@@ -58,5 +58,25 @@ class schedulService {
             throw new Error(`Failed to update schedule: ${error.message}`);
         }
     }
+ 
+    /**
+     * 사용자 스케줄 삭제
+     */
+    async deleteSchedule(id, userId) {
+        try {
+            const schedule = await Schedule.destroy({
+                where: { id, user_id: userId }
+            });
+
+            if (!schedule) {
+                throw new Error('schedule not found');
+            }
+
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to delete schedule: ${error.message}`);
+        }
+    }
+    
 
 }
