@@ -20,6 +20,18 @@ class schedulService {
      */
     async createSchedule({ userId, title, start_time, end_time, is_fixed }) {
         try {
+
+            // 일정 시작 시간 - 종료 시간 유효성 검사
+            if (new Date(start_time) >= new Date(end_time)) {
+                throw new Error('Start time must be before end time');
+            }
+
+            // 중복 검사
+            const overlap = await this.checkScheduleOverlap(userId, start_time, end_time);
+            if (overlap) {
+                throw new Error('Schedule overlaps with existing schedule');
+            }
+
             const scehduleData = {
                 user_id: userId,
                 title,
@@ -47,6 +59,17 @@ class schedulService {
 
             if (!schedule) {
                 throw new Error('schedule not found');
+            }
+
+            // 일정 시작 시간 - 종료 시간 유효성 검사
+            if (new Date(updateData.start_time) >= new Date(updateData.end_time)) {
+                throw new Error('Start time must be before end time');
+            }
+
+            // 중복 검사
+            const overlap = await this.checkScheduleOverlap(userId, updateData.start_time, updateData.end_time);
+            if (overlap) {
+                throw new Error('Schedule overlaps with existing schedule');
             }
 
             // 스케줄 타입 변경하지 못하도록 update값 삭제 -> 기존값 유지
@@ -153,7 +176,43 @@ class schedulService {
             throw new Error(`Failed to clean expired schedules: ${error.message}`);
         }
     }
+
+
+    /**
+     * 스케줄 중복 검사 -> 기존 스케줄 시간대에 추가 못하도록
+     */
+    async checkScheduleOverlap(userId, start_time, end_time, excludeId = null) {
+        try {
+            const where = {
+                user_id: userId,
+                [Op.or]: [
+                    {
+                        // 새로운 스케줄이 기존 스케줄 내 존재
+                        [Op.and]: [
+                            { start_time: { [Op.lte]: start_time } },
+                            { end_time: { [Op.gte]: start_time } }
+                        ]
+                    },
+                    {
+                        // 새로운 스케줄이 기존 스케줄을 포함
+                        [Op.and]: [
+                            { start_time: { [Op.gte]: start_time } },
+                            { start_time: { [Op.lte]: end_time } }
+                        ]
+                    }
+                ]
+            };
+    
+            if (excludeId) {
+                where.id = { [Op.ne]: excludeId };
+            }
+    
+            const overlappingSchedule = await Schedule.findOne({ where });
+            return overlappingSchedule;
+        } catch (error) {
+            throw new Error(`Failed to check schedule overlap: ${error.message}`);
+        }
+    }
 }
 
 module.exports = new scheduleService();
-
