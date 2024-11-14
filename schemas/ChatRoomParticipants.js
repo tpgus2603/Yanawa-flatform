@@ -1,25 +1,23 @@
-const ChatRoomParticipantSchema = new Schema({
+// schemas/ChatRoomParticipant.js
+
+const mongoose = require('mongoose');
+
+const ChatRoomParticipantSchema = new mongoose.Schema({
   chat_room_id: {
-    type: mongoose.Schema.Types.BigInt,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'ChatRoom',
     required: true,
   },
   user_id: {
-    type: mongoose.Schema.Types.BigInt,
-    ref: 'User',
+    type: Number, // SQL의 Users 테이블 ID 참조
     required: true,
-  },
-  joined_at: {
-    type: Date,
-    default: Date.now,
   },
   left_at: {
     type: Date,
     default: null,
   },
+}, {
+  timestamps: { createdAt: 'joined_at', updatedAt: false },
 });
-
-// 복합 인덱스 생성하여 중복 참여 방지
-ChatRoomParticipantSchema.index({ chat_room_id: 1, user_id: 1 }, { unique: true });
 
 module.exports = mongoose.model('ChatRoomParticipant', ChatRoomParticipantSchema);
