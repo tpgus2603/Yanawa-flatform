@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const Schedule = require('../models/Schedule');
 
-class schedulService {
+class scheduleService {
 
     /**
      * transactin wrapper 함수
@@ -54,13 +54,16 @@ class schedulService {
     /**
      * 유동 스케줄 만료일 구하기
      */
-    getNextMonday() {
-        const date = new Date();
+    getNextMonday(startTime) {
+        const date = new Date(startTime);
         const day = date.getDay();
-        const daysUntilNextMonday = (8 - day) % 7;
-        date.setDate(date.getDate() + daysUntilNextMonday);
-        date.setHours(0, 0, 0, 0);
-        return date;
+        const daysUntilNextMonday = (7 - day + 1) % 7;
+        
+        const nextMonday = new Date(date);
+        nextMonday.setDate(date.getDate() + daysUntilNextMonday);
+        nextMonday.setHours(0, 0, 0, 0);  // 자정으로 설정
+        
+        return nextMonday;
     }
 
     /**
@@ -81,7 +84,7 @@ class schedulService {
                 start_time,
                 end_time,
                 is_fixed,
-                expiry_date: is_fixed ? null : this.getNextMonday()
+                expiry_date: is_fixed ? null : this.getNextMonday(start_time)
             };
 
             return Schedule.create(scheduleData, { transaction });
@@ -114,8 +117,15 @@ class schedulService {
                 throw new Error('Schedule overlaps with existing schedule');
             }
 
-            delete updateData.is_fixed;
-            return schedule.update(updateData, { transaction });
+            const is_fixed = schedule.is_fixed;
+            const updatedData = {
+                ...updateData,
+                expiry_date: is_fixed ? null : this.getNextMonday(updateData.start_time),
+                updatedAt: new Date()
+            };
+            delete updatedData.is_fixed; 
+
+            return schedule.update(updatedData, { transaction });
         });
     }
  

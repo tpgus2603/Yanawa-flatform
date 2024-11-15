@@ -1,5 +1,4 @@
 // models/Schedule.js
-
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 const User = require('./User');
@@ -17,9 +16,18 @@ const Schedule = sequelize.define('Schedule', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  is_fixed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
+  expiry_date: {
+    type: DataTypes.DATE,
+    allowNull: true
+  }
 }, {
   tableName: 'Schedules',
-  timestamps: false,
+  timestamps: true,  // created_at과 updated_at 자동 관리
 });
 
 Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
