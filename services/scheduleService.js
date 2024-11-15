@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const Schedule = require('../models/Schedule');
 
-class schedulService {
+class scheduleService {
 
     /**
      * transactin wrapper 함수
