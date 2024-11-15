@@ -107,5 +107,27 @@ class scheduleController {
         }
     }
 
-    
+    /**
+     * 해당 사용자 전체 스케줄 조회
+     * GET /api/schedules
+     */
+    async getAllSchedules(req, res) {
+        try {
+            const userId = req.user.id;
+            const schedules = await ScheduleService.getAllSchedules(userId);
+
+            return res.status(200).json({
+                success: true,
+                data: schedules
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: 'Failed to fetch schedules',
+                    code: 'FETCH_ERROR'
+                }
+            });
+        }
+    }
 }
