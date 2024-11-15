@@ -108,7 +108,7 @@ class scheduleController {
 
     /**
      * 해당 사용자 전체 스케줄 조회
-     * GET /api/schedules
+     * GET /api/schedule/all
      */
     async getAllSchedules(req, res) {
         try {
