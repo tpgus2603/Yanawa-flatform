@@ -35,6 +35,11 @@ app.use(flash());
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
+// Schedule 라우터
+const scheduleRoutes = require('./routes/schedule');
+app.use('/api/schedule', scheduleRoutes);
+
+
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
