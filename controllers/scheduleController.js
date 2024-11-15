@@ -55,7 +55,7 @@ class scheduleController {
                     end_time
                 });
             
-            return res.statu(200).json({
+            return res.status(200).json({
                 success: true,
                 data: schedule
             });
@@ -130,4 +130,41 @@ class scheduleController {
             });
         }
     }
+
+    /**
+     * 해당 사용자 특정 스케줄 조회
+     * GET /api/schedule/:id
+     */
+    async getScheduleById(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+            const schedule = await ScheduleService.getScheduleById(id, userId);
+
+            return res.status(200).json({
+                success: true,
+                data: schedule
+            });
+        } catch (error) {
+            if (error.message === 'Schedule not found') {
+                return res.status(404).json({
+                    success: false,
+                    error: {
+                        message: error.message,
+                        code: 'SCHEDULE_NOT_FOUND'
+                    }
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: 'Failed to fetch schedule',
+                    code: 'FETCH_ERROR'
+                }
+            });
+        }
+    }
 }
+
+module.exports = new ScheduleController();
