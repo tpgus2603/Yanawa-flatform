@@ -1,4 +1,3 @@
-const { success } = require('../passport/googleStrategy');
 const ScheduleService = require('../services/scheduleService');
 
 class scheduleController {
@@ -167,4 +166,4 @@ class scheduleController {
     }
 }
 
-module.exports = new ScheduleController();
+module.exports = new scheduleController();
