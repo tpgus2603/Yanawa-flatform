@@ -7,6 +7,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('./passport'); // 변경된 경로
 const flash = require('connect-flash');
+const { initScheduleCleaner } = require('./utils/scheduler');
 
 const app = express();
 
@@ -39,6 +40,8 @@ app.use('/auth', authRoutes);
 const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);
 
+
+initScheduleCleaner();
 
 const PORT = process.env.PORT || 3000;
 
