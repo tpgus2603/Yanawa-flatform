@@ -76,5 +76,36 @@ class scheduleController {
                     code: 'SCHEDULE_UPDATE_ERROR'
                 }
             });
+        }
     }
+
+    /**
+     * 스케줄 삭제
+     * DELETE /api/schedule/:id
+     */
+    async deleteSchedule(req, res) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+
+            await ScheduleService.deleteSchedule(id, userId);
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    message: 'Schedule successfully deleted'
+                }
+            });
+        } catch (error) {
+            return res.status(404).json({
+                success: false,
+                error: {
+                    message: error.message,
+                    code: 'SCHEDULE_NOT_FOUND'
+                }
+            });
+        }
+    }
+
+    
 }
