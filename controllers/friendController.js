@@ -149,7 +149,36 @@ class friendController {
             });
         }
     }
-    
+
+    /**
+     * 친구 삭제
+     * DELETE /api/friend/:friendId
+     */
+    async deleteFriend(req, res) {
+        try {
+            const userId = req.user.id;
+            const { friendId } = req.params;
+
+            const result = await FriendService.deleteFriend(user, friendId);
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    message: 'Friend deleted successfully',
+                    data: result
+                }
+            });
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: error.message,
+                    code: 'FRIEND_DELETE_ERROR'
+                }
+            });
+        }
+    }
+
 }
 
 module.exports = new friendController();
