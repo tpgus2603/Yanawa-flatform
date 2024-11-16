@@ -73,6 +73,32 @@ class friendController {
             });
         }
     }
+    
+    /**
+     * 친구 요청 수락
+     * POST /api/friend/request/:requestId/accept
+     */
+    async acceptRequest(req, res) {
+        try {
+            const userId = req.user.id;
+            const { requesId } = req.params;
+
+            const result = await FriendService.acceptFriendRequest(requesId, userId);
+
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: error.message,
+                    code: 'REQUEST_ACCEPT_ERROR'
+                }
+            });
+        }
+    }
 }
 
 module.exports = new friendController();
