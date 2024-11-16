@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const Friend = require('../models/Friend');
-const User = require('../models/user');
+const User = require('../models/User');
 
 class friendService {
 

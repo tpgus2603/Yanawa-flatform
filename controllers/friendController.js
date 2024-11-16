@@ -81,9 +81,9 @@ class friendController {
     async acceptRequest(req, res) {
         try {
             const userId = req.user.id;
-            const { requesId } = req.params;
+            const { requestId } = req.params;
 
-            const result = await FriendService.acceptFriendRequest(requesId, userId);
+            const result = await FriendService.acceptFriendRequest(requestId, userId);
 
             return res.status(200).json({
                 success: true,
@@ -159,13 +159,13 @@ class friendController {
             const userId = req.user.id;
             const { friendId } = req.params;
 
-            const result = await FriendService.deleteFriend(user, friendId);
+            const result = await FriendService.deleteFriend(userId, friendId);
 
             return res.status(200).json({
                 success: true,
                 data: {
                     message: 'Friend deleted successfully',
-                    data: result
+                    result: result
                 }
             });
         } catch (error) {
