@@ -75,7 +75,7 @@ class friendService {
             },
             include: [{
                 model: User,
-                as: 'friend',
+                as: 'user',
                 attributes: ['id', 'name', 'email']
             }]
         });
@@ -84,38 +84,38 @@ class friendService {
     /**
      * 친구 요청 수락
      */
-    async acceptFriendRequest(requestId, userId) {
+    async acceptFriendRequest(userId, friendId) {
         const request = await Friend.findOne({
             where: {
-                id: requestId,
+                user_id: friendId,
                 friend_id: userId,
                 status: 'PENDING'
             }
         });
-
+    
         if (!request) {
             throw new Error('Friend request not found');
         }
-
-        return request.update({ status: 'ACCEPTED'});
+    
+        return request.update({ status: 'ACCEPTED' });
     }
 
     /**
      * 친구 요청 거절
      */
-    async rejectFriendRequest(requestId, userId) {
+    async rejectFriendRequest(userId, friendId) { 
         const result = await Friend.destroy({
             where: {
-                id: requestId,
-                friend_id: userId,
+                user_id: friendId,  
+                friend_id: userId,  
                 status: 'PENDING'
             }
         });
-
+    
         if (!result) {
-            throw new Error('Friend reqeust not found');
+            throw new Error('Friend request not found');
         }
-
+    
         return result;
     }
 
@@ -123,23 +123,44 @@ class friendService {
      * 친구 목록 조회
      */
     async getFriendList(userId) {
-        return Friend.findAll({
+        const friends = await Friend.findAll({
             where: {
                 [Op.or]: [
-                    {user_id: userId},
-                    {friend_id: userId}
+                    { user_id: userId },
+                    { friend_id: userId }
                 ],
                 status: 'ACCEPTED'
+            }
+        });
+    
+        const friendIds = friends.map(friend => 
+            friend.user_id === userId ? friend.friend_id : friend.user_id
+        );
+    
+        const friendUsers = await User.findAll({
+            where: {
+                id: friendIds
             },
-            include: [{
-                model: User,
-                as: 'friend',
-                attributes: ['id', 'name', 'email']
-            }, {
-                model: User,
-                as: 'user',
-                attributes: ['id', 'name', 'email']
-            }]
+            attributes: ['id', 'name', 'email']
+        });
+    
+        const friendsMap = friendUsers.reduce((map, user) => {
+            map[user.id] = user;
+            return map;
+        }, {});
+    
+        return friends.map(friend => {
+            const isSender = friend.user_id === userId;
+            const friendId = isSender ? friend.friend_id : friend.user_id;
+            
+            return {
+                id: friend.id,
+                status: friend.status,
+                createdAt: friend.createdAt,
+                updatedAt: friend.updatedAt,
+                friendInfo: friendsMap[friendId],
+                relationshipType: isSender ? 'sent' : 'received'
+            };
         });
     }
 

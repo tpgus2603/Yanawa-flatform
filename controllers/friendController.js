@@ -3,12 +3,12 @@ const FriendService = require('../services/friendService');
 class friendController {
     /**
      * 친구 요청 보내기
-     * POST /api/friend/request
+     * POST /api/friend/request/:friendId
      */
     async sendRequest(req, res) {
         try {
             const userId = req.user.id;
-            const { friendId } = req.body;
+            const { friendId } = req.params;
 
             const request = await FriendService.sendFriendRequest(userId, friendId);
             return res.status(201).json({
@@ -76,14 +76,14 @@ class friendController {
     
     /**
      * 친구 요청 수락
-     * POST /api/friend/request/:requestId/accept
+     * POST /api/friend/request/:friendId/accept
      */
     async acceptRequest(req, res) {
         try {
             const userId = req.user.id;
-            const { requestId } = req.params;
+            const { friendId } = req.params;
 
-            const result = await FriendService.acceptFriendRequest(requestId, userId);
+            const result = await FriendService.acceptFriendRequest(userId, friendId);
 
             return res.status(200).json({
                 success: true,
@@ -102,14 +102,14 @@ class friendController {
 
     /**
      * 친구 요청 거절
-     * POST /api/friend/request/:requestId/reject
+     * POST /api/friend/request/:friendId/reject
      */
     async rejectRequest(req, res) {
         try {
             const userId = req.user.id;
-            const { requesId } = req.params;
+            const { friendId } = req.params;
 
-            const result = await FriendService.rejectFriendRequest(requesId, userId);
+            const result = await FriendService.rejectFriendRequest(userId, friendId);
 
             return res.status(200).json({
                 success: true,

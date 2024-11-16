@@ -44,8 +44,8 @@ const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);
 
 // Friend 라우터
-const friendRoutes = require('./routes/friendRoutes');
-app.use('/api/friends', friendRoutes);
+const friendRoutes = require('./routes/friend');
+app.use('/api/friend', friendRoutes);
 
 
 

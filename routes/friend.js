@@ -7,9 +7,9 @@ router.use(isLoggedIn);
 
 /**
  * 친구 요청 보내기
- * POST /api/friend/request
+ * POST /api/friend/request/:friendId
  */
-router.post('/request', FriendController.sendRequest);
+router.post('/request/:friendId', FriendController.sendRequest);
 
 /**
  * 받은 친구 요청 목록 조회
@@ -25,15 +25,15 @@ router.get('/requests/sent', FriendController.getSentRequests);
 
 /**
  * 친구 요청 수락
- * POST /api/friend/request/:requestId/accept
+ * POST /api/friend/request/:friendId/accept
  */
-router.post('/request/:requestId/accept', FriendController.acceptRequest);
+router.post('/request/:friendId/accept', FriendController.acceptRequest);
 
 /**
  * 친구 요청 거절
- * POST /api/friend/request/:requestId/reject
+ * POST /api/friend/request/:friendId/reject
  */
-router.post('/request/:requestId/reject', FriendController.rejectRequest);
+router.post('/request/:friendId/reject', FriendController.rejectRequest);
 
 /**
  * 친구 목록 조회
