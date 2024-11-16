@@ -99,6 +99,32 @@ class friendController {
             });
         }
     }
+
+    /**
+     * 친구 요청 거절
+     * POST /api/friend/request/:requestId/reject
+     */
+    async rejectRequest(req, res) {
+        try {
+            const userId = req.user.id;
+            const { requesId } = req.params;
+
+            const result = await FriendService.rejectFriendRequest(requesId, userId);
+
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: error.message,
+                    code: 'REQUEST_REJECT_ERROR'
+                }
+            });
+        }
+    }
 }
 
 module.exports = new friendController();
