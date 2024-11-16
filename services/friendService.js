@@ -106,6 +106,30 @@ class friendService {
         return result;
     }
 
+    /**
+     * 친구 목록 조회
+     */
+    async getFriendList(userId) {
+        return Friend.findAll({
+            where: {
+                [Op.or]: [
+                    {user_id: userId},
+                    {friend_id: userId}
+                ],
+                status: 'ACCEPTED'
+            },
+            include: [{
+                model: User,
+                as: 'friend',
+                attributes: ['id', 'name', 'email']
+            }, {
+                model: User,
+                as: 'friend',
+                attributes: ['id', 'name', 'email']
+            }]
+        });
+    }
+
 }
 
 module.exports = new FriendService();
