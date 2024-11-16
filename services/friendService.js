@@ -130,6 +130,26 @@ class friendService {
         });
     }
 
+    /**
+     * 친구 삭제
+     */
+    async deleteFriend(userId, freindId) {
+        const result = await Friend.destroy({
+            where: {
+                [Op.or]: [
+                    {user_id: userId, friend_id: friendId},
+                    {user_id: friendId, friend_id: userId}
+                ],
+                status: 'ACCEPTED'
+            }
+        });
+
+        if (!result) {
+            throw new Error('Friend relationship not found');
+        }
+        return result;
+    }
+
 }
 
-module.exports = new FriendService();
+module.exports = new friendService();
