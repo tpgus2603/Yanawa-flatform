@@ -33,6 +33,24 @@ class friendService {
             status: 'PENDING'
         });
     }
+
+    /**
+     * 받은 친구 요청 목록 조회
+     */
+    async getReveivedRequests(userId) {
+        return Friend.findAll({
+            where: {
+                friend_id: userId,
+                status: 'PENDING'
+            },
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['id', 'name', 'email']
+            }]
+        });
+    }
+    
 }
 
 module.exports = new FriendService();
