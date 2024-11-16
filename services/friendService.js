@@ -37,7 +37,7 @@ class friendService {
     /**
      * 받은 친구 요청 목록 조회
      */
-    async getReveivedRequests(userId) {
+    async getReceivedRequests(userId) {
         return Friend.findAll({
             where: {
                 friend_id: userId,
@@ -57,7 +57,7 @@ class friendService {
     async getSentRequests(userId) {
         return Friend.findAll({
             where: {
-                user_Id: userId,
+                user_id: userId,
                 status: 'PENDING'
             },
             include: [{
@@ -81,10 +81,10 @@ class friendService {
         });
 
         if (!request) {
-            throw new Error('Friend reqeust not found');
+            throw new Error('Friend request not found');
         }
 
-        return request.update({ status: 'ACCEPTED '});
+        return request.update({ status: 'ACCEPTED'});
     }
 
     /**
@@ -124,7 +124,7 @@ class friendService {
                 attributes: ['id', 'name', 'email']
             }, {
                 model: User,
-                as: 'friend',
+                as: 'user',
                 attributes: ['id', 'name', 'email']
             }]
         });
@@ -133,7 +133,7 @@ class friendService {
     /**
      * 친구 삭제
      */
-    async deleteFriend(userId, freindId) {
+    async deleteFriend(userId, friendId) {
         const result = await Friend.destroy({
             where: {
                 [Op.or]: [
