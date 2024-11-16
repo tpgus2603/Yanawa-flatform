@@ -125,6 +125,31 @@ class friendController {
             });
         }
     }
+
+    /**
+     * 친구 목록 조회
+     * GET /api/friend/all
+     */
+    async getFriendList(req, res) {
+        try {
+            const userId = req.user.id;
+            const friends = await FriendService.getFriendList(userId);
+
+            return res.status(200).json({
+                success: true,
+                data: friends
+            });
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: error.message,
+                    code: 'FETCH_ERROR'
+                }
+            });
+        }
+    }
+    
 }
 
 module.exports = new friendController();
