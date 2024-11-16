@@ -7,7 +7,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('./passport'); // 변경된 경로
 const flash = require('connect-flash');
-const { initScheduleCleaner } = require('./utils/scheduler');
+const { initScheduleCleaner } = require('./utils/scheduler'); // 유동 스케줄 자동 삭제 유틸
 
 const app = express();
 
@@ -32,13 +32,21 @@ app.use(passport.session());
 // 플래시 메시지 (선택 사항)
 app.use(flash());
 
-// 라우트 설정
+/**
+ * 라우터 등록
+ */
+// 로그인 라우터
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
 // Schedule 라우터
 const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);
+
+// Friend 라우터
+const friendRoutes = require('./routes/friend');
+app.use('/api/friend', friendRoutes);
+
 
 
 initScheduleCleaner();
