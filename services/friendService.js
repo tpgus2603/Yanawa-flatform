@@ -50,6 +50,25 @@ class friendService {
             }]
         });
     }
+
+    /**
+     * 친구 요청 수락
+     */
+    async acceptFriendRequest(requestId, userId) {
+        const request = await Friend.findOne({
+            where: {
+                id: requestId,
+                friend_id: userId,
+                status: 'PENDING'
+            }
+        });
+
+        if (!request) {
+            throw new Error('Friend reqeust not found');
+        }
+
+        return request.update({ status: 'ACCEPTED '});
+    }
     
 }
 
