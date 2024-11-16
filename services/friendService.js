@@ -3,13 +3,26 @@ const Friend = require('../models/Friend');
 const User = require('../models/user');
 
 class friendService {
-    
+
+    /**
+     * User 존재 여부 유효성 검사
+     */
+    async validUser(userId) {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return user;
+    }
     /**
      * 친구 요청 보내기
      * 나 자신에게 보내기 or 이미 존재하는 친구 -> X
      * 이후, PENDING 상태로 변환 -> 수락/거절에 따라 변화
      */
     async sendFriendRequest(userId, friendId) {
+        await this.validUser(userId);
+        await this.validUser(friendId);
+
         if (userId === friendId) {
             throw new Error('Cannot send friend request to yourself');
         }
