@@ -69,6 +69,25 @@ class friendService {
 
         return request.update({ status: 'ACCEPTED '});
     }
+
+    /**
+     * 친구 요청 거절
+     */
+    async rejectFriendRequest(requestId, userId) {
+        const result = await Friend.destroy({
+            where: {
+                id: requestId,
+                friend_id: userId,
+                status: 'PENDING'
+            }
+        });
+
+        if (!result) {
+            throw new Error('Friend reqeust not found');
+        }
+
+        return result;
+    }
     
 }
 
