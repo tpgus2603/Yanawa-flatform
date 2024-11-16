@@ -52,6 +52,23 @@ class friendService {
     }
 
     /**
+     * 보낸 친구 요청 목록 조회
+     */
+    async getSentRequests(userId) {
+        return Friend.findAll({
+            where: {
+                user_Id: userId,
+                status: 'PENDING'
+            },
+            include: [{
+                model: User,
+                as: 'friend',
+                attributes: ['id', 'name', 'email']
+            }]
+        });
+    }
+
+    /**
      * 친구 요청 수락
      */
     async acceptFriendRequest(requestId, userId) {
@@ -88,7 +105,7 @@ class friendService {
 
         return result;
     }
-    
+
 }
 
 module.exports = new FriendService();
