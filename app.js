@@ -1,4 +1,3 @@
-
 // app.js
 
 require('dotenv').config();
@@ -7,9 +6,22 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('./passport'); // 변경된 경로
 const flash = require('connect-flash');
-const { initScheduleCleaner } = require('./utils/scheduler'); // 유동 스케줄 자동 삭제 유틸
+const { initScheduleCleaner } = require('./utils/scheduler');
+const connectMongoDB = require('./config/mongoose'); // MongoDB 연결
+const { sequelize } = require('./config/sequelize'); // Sequelize 연결
+const cors = require('cors');
 
 const app = express();
+
+// CORS 설정
+app.use(
+  cors({
+    origin: 'http://localhost:3000', // 허용할 도메인 설정 (예: 프론트엔드 주소)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // 쿠키와 인증 정보를 허용하려면 true로 설정
+  })
+);
 
 
 // 미들웨어 설정
@@ -35,28 +47,43 @@ app.use(flash());
 /**
  * 라우터 등록
  */
-// 로그인 라우터
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
-// Schedule 라우터
 const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);
 
-// Friend 라우터
 const friendRoutes = require('./routes/friend');
 app.use('/api/friend', friendRoutes);
 
+const meetingRoutes = require('./routes/meetingRoute');
+app.use('/api/meeting', meetingRoutes);
 
+const chatRoutes = require('./routes/chatRoute');
+app.use('/api/chat', chatRoutes);
 
+// 스케줄 클리너 초기화
 initScheduleCleaner();
 
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
+// MongoDB 및 MySQL 연결 후 서버 시작
+(async () => {
+  try {
+    // MongoDB 연결
+    await connectMongoDB();
+    console.log('✅ MongoDB 연결 성공');
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+    // MySQL 연결 확인
+    await sequelize.authenticate();
+    console.log('✅ MySQL 연결 성공');
+
+    // 서버 시작
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ 서버 시작 중 오류 발생:', error);
+    process.exit(1);
+  }
+})();
