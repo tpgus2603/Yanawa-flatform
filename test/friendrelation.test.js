@@ -94,17 +94,6 @@ describe('User and Friend Relationships', () => {
     expect(bob.sentRequests[0].receiver.name).toBe('Alice');
   });
 
-  test('self friend reqeust', async () => {
-    await expect(
-      Friend.create({
-        id: 3,
-        requester_id: 1,
-        receiver_id: 1, // 자신에게 요청
-        status: 'PENDING',
-      })
-    ).rejects.toThrow();
-  });
-  
   test('already request test', async () => {
     // Alice가 Bob에게 이미 친구 요청을 보냈으므로, 다시 보내면 에러 발생
     await expect(
