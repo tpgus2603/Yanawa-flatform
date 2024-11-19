@@ -1,10 +1,6 @@
 const FriendService = require('../services/friendService');
 
 class friendController {
-
-
-
-    class FriendController {
         /**
          * 친구 요청 보내기
          * 클라이언트는 userId와 요청을 보낼 사용자의 email을 전송
@@ -37,12 +33,11 @@ class friendController {
                 if (error.message === 'Friend request already exists') {
                     return res.status(409).json({ message: error.message });
                 }
+
                 // 일반 오류 처리
                 return res.status(500).json({ message: '서버 오류가 발생했습니다.', error: error.message });
             }
         }
-    }
-
     /**
      * 받은 친구 요청 목록 조회
      * GET /api/friend/requests/received
@@ -195,7 +190,6 @@ class friendController {
             });
         }
     }
-
 }
 
 module.exports = new friendController();
