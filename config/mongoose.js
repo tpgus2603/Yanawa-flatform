@@ -2,17 +2,17 @@
 
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const connectMongoDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ MongoDB 연결 성공');
+  } catch (error) {
+    console.error('❌ MongoDB 연결 실패:', error);
+    throw error;
+  }
+};
 
-mongoose.connection.on('connected', () => {
-  console.log('Mongoose connected.');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('Mongoose connection error:', err);
-});
-
-module.exports = mongoose;
+module.exports = connectMongoDB;

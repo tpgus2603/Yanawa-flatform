@@ -1,9 +1,14 @@
 // models/User.js
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize'); // sequelize 인스턴스 경로에 맞게 수정하세요.
+const { sequelize } = require('../config/sequelize'); 
 
 const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.BIGINT, // 수정: id 필드를 BIGINT로 설정
+    autoIncrement: true,
+    primaryKey: true,
+  },
   name: {
     type: DataTypes.STRING, // VARCHAR
     allowNull: false,
@@ -20,5 +25,18 @@ const User = sequelize.define('User', {
   tableName: 'Users',
   timestamps: true, // createdAt과 updatedAt 자동 관리
 });
+
+User.associate = (models) => {
+  User.hasMany(models.Meeting, {
+    foreignKey: 'created_by', 
+    as: 'createdMeetings', 
+  });
+
+  User.hasMany(models.MeetingParticipant, {
+    foreignKey: 'user_id',
+    as: 'userMeetingParticipations', 
+  });
+};  
+
 
 module.exports = User;

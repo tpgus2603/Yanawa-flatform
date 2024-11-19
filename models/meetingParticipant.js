@@ -1,19 +1,32 @@
 // models/MeetingParticipant.js
 
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/sequelize');
-const Meeting = require('./Meeting');
-const User = require('./User');
+const { sequelize } = require('../config/sequelize');
 
-const MeetingParticipant = sequelize.define('MeetingParticipant', {}, {
+const MeetingParticipant = sequelize.define('MeetingParticipant', {
+  meeting_id: {
+    type: DataTypes.BIGINT,
+    allowNull: false
+  },
+  user_id: {
+    type: DataTypes.BIGINT,
+    allowNull: false
+  }
+}, {
   tableName: 'MeetingParticipants',
   timestamps: false,
 });
 
-MeetingParticipant.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
-Meeting.hasMany(MeetingParticipant, { foreignKey: 'meeting_id', as: 'participants' });
+MeetingParticipant.associate = (models) => {
+  MeetingParticipant.belongsTo(models.Meeting, {
+    foreignKey: 'meeting_id',
+    as: 'meeting'
+  });
 
-MeetingParticipant.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipations' });
+  MeetingParticipant.belongsTo(models.User, {
+    foreignKey: 'user_id',
+    as: 'participantUser'
+  });
+};
 
 module.exports = MeetingParticipant;
