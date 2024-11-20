@@ -3,7 +3,7 @@ const { Meeting, MeetingParticipant, User } = require('../models');
 const ChatRoom = require('../models/chatRooms');
 const chatController = require('../controllers/chatController');
 const MeetingResponse = require('../dtos/MeetingResponse');
-const MeetingDetailResponse = require('../dtos/MeetingDetailResponse');
+const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
 
 class MeetingService {
   async createMeeting(meetingData) {
@@ -152,7 +152,7 @@ class MeetingService {
       throw new Error('모임을 찾을 수 없습니다.');
     }
 
-    return new MeetingDetailResponse(meeting);
+    return new MeetingDetailResponseDTO(meeting);
   }
 }
 
