@@ -56,12 +56,8 @@ describe('Friend Service', () => {
         });
 
         test('should throw error when sending duplicate friend request', async () => {
-            // Alice sends a friend request to Bob
             await friendService.sendFriendRequest(1, 2);
-            // Bob accepts Alice's request
             await friendService.acceptFriendRequest(2, 1);
-
-            // Alice tries to send another friend request to Bob
             await expect(friendService.sendFriendRequest(1, 2)).rejects.toThrow('Friend request already exists');
         });
 
