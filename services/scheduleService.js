@@ -1,10 +1,14 @@
+// services/scheduleService.js
+
 const { Op } = require('sequelize');
 const Schedule = require('../models/Schedule');
+const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
+const SchedulesResponseDTO = require('../dtos/SchedulesResponseDTO');
 
 class scheduleService {
 
     /**
-     * transactin wrapper 함수
+     * 트랜잭션 래퍼 함수
      */
     async withTransaction(callback) {
         const transaction = await Schedule.sequelize.transaction();
@@ -28,9 +32,7 @@ class scheduleService {
                 { is_fixed: true },
                 {
                     is_fixed: false,
-                    expiry_date: {
-                        [Op.gt]: new Date()
-                    }
+                    expiry_date: { [Op.gt]: new Date() }
                 }
             ]
         };
@@ -58,11 +60,11 @@ class scheduleService {
         const date = new Date(startTime);
         const day = date.getDay();
         const daysUntilNextMonday = (7 - day + 1) % 7;
-        
+
         const nextMonday = new Date(date);
         nextMonday.setDate(date.getDate() + daysUntilNextMonday);
         nextMonday.setHours(0, 0, 0, 0);  // 자정으로 설정
-        
+
         return nextMonday;
     }
 
@@ -70,7 +72,7 @@ class scheduleService {
      * 사용자 스케줄 생성
      */
     async createSchedule({ userId, title, start_time, end_time, is_fixed }) {
-        return this.withTransaction(async (transaction) => {
+        const schedule = await this.withTransaction(async (transaction) => {
             this.validateScheduleTime(start_time, end_time);
 
             const overlap = await this.checkScheduleOverlap(userId, start_time, end_time);
@@ -89,13 +91,15 @@ class scheduleService {
 
             return Schedule.create(scheduleData, { transaction });
         });
+
+        return new ScheduleResponseDTO(schedule);
     }
 
     /**
      * 사용자 스케줄 수정
      */
     async updateSchedule(id, userId, updateData) {
-        return this.withTransaction(async (transaction) => {
+        const updatedSchedule = await this.withTransaction(async (transaction) => {
             const schedule = await Schedule.findOne({
                 where: { id, user_id: userId },
                 transaction
@@ -108,8 +112,8 @@ class scheduleService {
             this.validateScheduleTime(updateData.start_time, updateData.end_time);
 
             const overlap = await this.checkScheduleOverlap(
-                userId, 
-                updateData.start_time, 
+                userId,
+                updateData.start_time,
                 updateData.end_time,
                 id
             );
@@ -118,17 +122,19 @@ class scheduleService {
             }
 
             const is_fixed = schedule.is_fixed;
-            const updatedData = {
+            const updatedDataWithExpiry = {
                 ...updateData,
                 expiry_date: is_fixed ? null : this.getNextMonday(updateData.start_time),
                 updatedAt: new Date()
             };
-            delete updatedData.is_fixed; 
+            delete updatedDataWithExpiry.is_fixed;
 
-            return schedule.update(updatedData, { transaction });
+            return schedule.update(updatedDataWithExpiry, { transaction });
         });
+
+        return new ScheduleResponseDTO(updatedSchedule);
     }
- 
+
     /**
      * 사용자 스케줄 삭제
      */
@@ -143,19 +149,22 @@ class scheduleService {
                 throw new Error('Schedule not found');
             }
 
-            return true;
+            // 삭제 성공 메시지 반환
+            return { message: 'Schedule successfully deleted' };
         });
     }
-    
+
     /**
      * 해당 사용자의 스케줄 정보 조회
      */
     async getAllSchedules(userId) {
         try {
-            return Schedule.findAll({
+            const schedules = await Schedule.findAll({
                 where: this.getScheduleWhereClause(userId),
                 order: [['start_time', 'ASC']]
             });
+
+            return new SchedulesResponseDTO(schedules);
         } catch (error) {
             throw new Error(`Failed to fetch schedules: ${error.message}`);
         }
@@ -169,29 +178,26 @@ class scheduleService {
             const schedule = await Schedule.findOne({
                 where: this.getScheduleWhereClause(userId, id)
             });
-            
+
             if (!schedule) {
                 throw new Error('Schedule not found');
             }
-            
-            return schedule;
+
+            return new ScheduleResponseDTO(schedule);
         } catch (error) {
             throw new Error(`Failed to fetch schedule: ${error.message}`);
         }
     }
-    
-    
+
     /**
-     * 만료된 유동 스케줄 정리 -> utils에 cron job 추가해서 실행하도록 설정
+     * 만료된 유동 스케줄 정리
      */
     async cleanExpiredSchedules() {
         try {
             await Schedule.destroy({
                 where: {
                     is_fixed: false,
-                    expiry_date: {
-                        [Op.lte]: new Date()
-                    }
+                    expiry_date: { [Op.lte]: new Date() }
                 }
             });
         } catch (error) {
@@ -199,9 +205,8 @@ class scheduleService {
         }
     }
 
-
     /**
-     * 스케줄 중복 검사 -> 기존 스케줄 시간대에 추가 못하도록
+     * 스케줄 중복 검사
      */
     async checkScheduleOverlap(userId, start_time, end_time, excludeId = null) {
         try {
@@ -209,14 +214,12 @@ class scheduleService {
                 user_id: userId,
                 [Op.or]: [
                     {
-                        // 새로운 스케줄이 기존 스케줄 내 존재
                         [Op.and]: [
                             { start_time: { [Op.lte]: start_time } },
                             { end_time: { [Op.gte]: start_time } }
                         ]
                     },
                     {
-                        // 새로운 스케줄이 기존 스케줄을 포함
                         [Op.and]: [
                             { start_time: { [Op.gte]: start_time } },
                             { start_time: { [Op.lte]: end_time } }
@@ -224,11 +227,11 @@ class scheduleService {
                     }
                 ]
             };
-    
+
             if (excludeId) {
                 where.id = { [Op.ne]: excludeId };
             }
-    
+
             const overlappingSchedule = await Schedule.findOne({ where });
             return overlappingSchedule;
         } catch (error) {

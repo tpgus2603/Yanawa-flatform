@@ -3,7 +3,11 @@
 const { Op } = require('sequelize');
 const Friend = require('../models/Friend');
 const User = require('../models/User');
-const sequelize = require('../config/sequelize'); // 트랜잭션을 위해 추가
+const sequelize = require('../config/sequelize');
+
+// DTO 임포트
+const FriendRequestDTO = require('../dtos/FriendRequestDTO');
+const FriendListDTO = require('../dtos/FriendListDTO');
 
 class FriendService {
     /**
@@ -24,7 +28,7 @@ class FriendService {
      * 친구 요청 보내기
      * @param {number} userId - 친구 요청을 보내는 사용자 ID
      * @param {number} friendId - 친구 요청을 받는 사용자 ID
-     * @returns {Promise<Friend>} - 생성된 친구 요청 객체
+     * @returns {Promise<FriendRequestDTO>} - 생성된 친구 요청 DTO
      * @throws {Error} - 유효하지 않은 요청일 경우
      */
     async sendFriendRequest(userId, friendId) {
@@ -35,12 +39,40 @@ class FriendService {
             throw new Error('Cannot send friend request to yourself');
         }
 
+        // 기존 친구 관계 확인 (이미 친구인 경우)
+        const existingFriend = await Friend.findOne({
+            where: {
+                [Op.or]: [
+                    { requester_id: userId, receiver_id: friendId },
+                    { requester_id: friendId, receiver_id: userId },
+                ],
+                status: 'ACCEPTED',
+            },
+        });
+
+        if (existingFriend) {
+            throw new Error('Friend request already exists');
+        }
+
         try {
-            return await Friend.create({
+            const friendRequest = await Friend.create({
                 requester_id: userId,
                 receiver_id: friendId,
                 status: 'PENDING'
             });
+
+            // DTO로 변환하여 반환
+            const friendRequestWithDetails = await Friend.findByPk(friendRequest.id, {
+                include: [
+                    { model: User, as: 'requester', attributes: ['id', 'name', 'email'] },
+                    { model: User, as: 'receiver', attributes: ['id', 'name', 'email'] }
+                ]
+            });
+
+            // 디버깅을 위해 로그 추가
+            //console.log('FriendRequestWithDetails:', friendRequestWithDetails.toJSON());
+
+            return new FriendRequestDTO(friendRequestWithDetails.toJSON());
         } catch (error) {
             if (error.name === 'SequelizeUniqueConstraintError') {
                 throw new Error('Friend request already exists');
@@ -52,46 +84,48 @@ class FriendService {
     /**
      * 받은 친구 요청 목록 조회
      * @param {number} userId - 요청을 받은 사용자 ID
-     * @returns {Promise<Array>} - 받은 친구 요청 목록
+     * @returns {Promise<Array<FriendRequestDTO>>} - 받은 친구 요청 목록 DTO 배열
      */
     async getReceivedRequests(userId) {
-        return Friend.findAll({
+        const receivedRequests = await Friend.findAll({
             where: {
                 receiver_id: userId,
                 status: 'PENDING'
             },
-            include: [{
-                model: User,
-                as: 'requester',
-                attributes: ['id', 'name', 'email']
-            }]
+            include: [
+                { model: User, as: 'requester', attributes: ['id', 'name', 'email'] },
+                { model: User, as: 'receiver', attributes: ['id', 'name', 'email'] } // 추가
+            ]
         });
+
+        return receivedRequests.map(req => new FriendRequestDTO(req));
     }
 
     /**
      * 보낸 친구 요청 목록 조회
      * @param {number} userId - 요청을 보낸 사용자 ID
-     * @returns {Promise<Array>} - 보낸 친구 요청 목록
+     * @returns {Promise<Array<FriendRequestDTO>>} - 보낸 친구 요청 목록 DTO 배열
      */
     async getSentRequests(userId) {
-        return Friend.findAll({
+        const sentRequests = await Friend.findAll({
             where: {
                 requester_id: userId,
                 status: 'PENDING'
             },
-            include: [{
-                model: User,
-                as: 'receiver',
-                attributes: ['id', 'name', 'email']
-            }]
+            include: [
+                { model: User, as: 'receiver', attributes: ['id', 'name', 'email'] },
+                { model: User, as: 'requester', attributes: ['id', 'name', 'email'] } // 추가
+            ]
         });
+
+        return sentRequests.map(req => new FriendRequestDTO(req));
     }
 
     /**
      * 친구 요청 수락
      * @param {number} userId - 요청을 수락하는 사용자 ID
      * @param {number} friendId - 친구 요청을 보낸 사용자 ID
-     * @returns {Promise<Friend>} - 업데이트된 친구 요청 객체
+     * @returns {Promise<FriendRequestDTO>} - 업데이트된 친구 요청 DTO
      * @throws {Error} - 친구 요청이 존재하지 않을 경우
      */
     async acceptFriendRequest(userId, friendId) {
@@ -113,7 +147,16 @@ class FriendService {
             await request.update({ status: 'ACCEPTED' }, { transaction });
 
             await transaction.commit();
-            return request;
+
+            // DTO로 변환하여 반환
+            const updatedRequest = await Friend.findByPk(request.id, {
+                include: [
+                    { model: User, as: 'requester', attributes: ['id', 'name', 'email'] },
+                    { model: User, as: 'receiver', attributes: ['id', 'name', 'email'] }
+                ]
+            });
+
+            return new FriendRequestDTO(updatedRequest);
         } catch (error) {
             await transaction.rollback();
             throw error;
@@ -146,9 +189,11 @@ class FriendService {
     /**
      * 친구 목록 조회
      * @param {number} userId - 친구 목록을 조회할 사용자 ID
-     * @returns {Promise<Array>} - 친구 목록
+     * @param {number} limit - 한 페이지에 표시할 친구 수
+     * @param {number} offset - 페이징 오프셋
+     * @returns {Promise<Array<FriendListDTO>>} - 친구 목록 DTO 배열
      */
-    async getFriendList(userId) {
+    async getFriendList(userId, limit = 20, offset = 0) {
         const friends = await Friend.findAll({
             where: {
                 [Op.or]: [
@@ -168,22 +213,16 @@ class FriendService {
                     as: 'receiver',
                     attributes: ['id', 'name', 'email']
                 }
-            ]
+            ],
+            order: [['id', 'ASC']], // 일관된 정렬 순서 추가
+            limit,
+            offset
         });
 
-        return friends.map(friend => {
-            const isRequester = friend.requester_id === userId;
-            const friendInfo = isRequester ? friend.receiver : friend.requester;
+        // 디버깅을 위해 로그 추가
+        //console.log(`getFriendList: Retrieved ${friends.length} friends with limit=${limit} and offset=${offset}`);
 
-            return {
-                id: friend.id,
-                status: friend.status,
-                createdAt: friend.createdAt,
-                updatedAt: friend.updatedAt,
-                friendInfo: friendInfo,
-                relationshipType: isRequester ? 'sent' : 'received'
-            };
-        });
+        return friends.map(friend => new FriendListDTO(friend, userId));
     }
 
     /**
