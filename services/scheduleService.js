@@ -3,7 +3,6 @@
 const { Op } = require('sequelize');
 const Schedule = require('../models/Schedule');
 const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
-const SchedulesResponseDTO = require('../dtos/SchedulesResponseDTO');
 
 class scheduleService {
 
@@ -74,7 +73,6 @@ class scheduleService {
     async createSchedule({ userId, title, start_time, end_time, is_fixed }) {
         const schedule = await this.withTransaction(async (transaction) => {
             this.validateScheduleTime(start_time, end_time);
-
             const overlap = await this.checkScheduleOverlap(userId, start_time, end_time);
             if (overlap) {
                 throw new Error('Schedule overlaps with existing schedule');
@@ -163,8 +161,8 @@ class scheduleService {
                 where: this.getScheduleWhereClause(userId),
                 order: [['start_time', 'ASC']]
             });
-
-            return new SchedulesResponseDTO(schedules);
+            const schedulesDTO = schedules.map(schedule => new ScheduleResponseDTO(schedule));
+            return schedulesDTO;
         } catch (error) {
             throw new Error(`Failed to fetch schedules: ${error.message}`);
         }
