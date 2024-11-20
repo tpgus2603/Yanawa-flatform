@@ -4,7 +4,7 @@ const sequelize = require('../config/sequelize');
 const User = require('../models/User');
 const Friend = require('../models/Friend');
 const Schedule = require('../models/Schedule');
-const scheduleService = require('./scheduleService'); // scheduleService 임포트
+const scheduleService = require('./scheduleService'); 
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });

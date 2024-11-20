@@ -3,7 +3,7 @@
 const sequelize = require('../config/sequelize'); // Sequelize 인스턴스 임포트
 const User = require('../models/User');
 const Friend = require('../models/Friend');
-const friendService = require('../services/friendService'); // FriendService 임포트
+const friendService = require('./friendService'); // FriendService 임포트
 
 // Sequelize의 Op를 가져오기 위해 추가
 const { Op } = require('sequelize');
@@ -24,7 +24,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-    // 모든 테스트가 끝난 후 데이터베이스 연결을 종료합니다.
+    
     await sequelize.close();
 });
 
@@ -81,7 +81,7 @@ describe('Friend Service', () => {
         });
 
         test('not send request', async () => {
-            const receivedRequests = await friendService.getReceivedRequests(2); // Bob has no pending requests
+            const receivedRequests = await friendService.getReceivedRequests(2); 
             expect(receivedRequests.length).toBe(0);
         });
     });
@@ -96,7 +96,7 @@ describe('Friend Service', () => {
         });
 
         test('should return empty array when no sent requests', async () => {
-            const sentRequests = await friendService.getSentRequests(3); // Charlie has not sent any PENDING requests
+            const sentRequests = await friendService.getSentRequests(3); 
             expect(sentRequests.length).toBe(0);
         });
     });
@@ -171,7 +171,6 @@ describe('Friend Service', () => {
             const limit = 5;
             const offset = 0;
             const friendsPage1 = await friendService.getFriendList(1, limit, offset);
-            //console.log('getFriendList Page 1:', friendsPage1); // 디버깅을 위한 로그 추가
             expect(friendsPage1.length).toBe(limit);
             const expectedNamesPage1 = ['Bob', 'Charlie', 'User4', 'User5', 'User6'];
             const receivedNamesPage1 = friendsPage1.map(friend => friend.friendInfo.name);
@@ -180,7 +179,6 @@ describe('Friend Service', () => {
             });
 
             const friendsPage2 = await friendService.getFriendList(1, limit, limit);
-            //console.log('getFriendList Page 2:', friendsPage2); // 디버깅을 위한 로그 추가
             expect(friendsPage2.length).toBe(limit);
             const expectedNamesPage2 = ['User7', 'User8', 'User9', 'User10', 'User11'];
             const receivedNamesPage2 = friendsPage2.map(friend => friend.friendInfo.name);
