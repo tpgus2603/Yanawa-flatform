@@ -1,8 +1,7 @@
 // services/friendService.js
 
 const { Op } = require('sequelize');
-const Friend = require('../models/Friend');
-const User = require('../models/User');
+const { Friend,User} = require('../models');
 const sequelize = require('../config/sequelize');
 
 // DTO 임포트

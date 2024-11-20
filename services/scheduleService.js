@@ -1,5 +1,5 @@
 // services/scheduleService.js
-
+const sequelize = require('../config/sequelize');
 const { Op } = require('sequelize');
 const Schedule = require('../models/Schedule');
 const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
@@ -9,16 +9,16 @@ class scheduleService {
    * 트랜잭션 래퍼 함수
    */
   async withTransaction(callback) {
-    const transaction = await Schedule.sequelize.transaction();
-    try {
-      const result = await callback(transaction);
-      await transaction.commit();
-      return result;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
+        const transaction = await sequelize.transaction(); // 직접 sequelize 사용
+        try {
+            const result = await callback(transaction);
+            await transaction.commit();
+            return result;
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
-  }
 
   /**
    * 공통 where 절 생성

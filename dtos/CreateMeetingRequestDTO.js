@@ -20,7 +20,7 @@ class CreateMeetingRequestDTO {
             start_time: Joi.date().iso().required(),
             end_time: Joi.date().iso().greater(Joi.ref('start_time')).required(),
             location: Joi.string().allow('', null).optional(),
-            deadline: Joi.date().iso().greater(Joi.ref('start_time')).optional(),
+            deadline: Joi.date().iso().less(Joi.ref('start_time')).optional(),
             type: Joi.string().valid('OPEN', 'CLOSE').required(),
             created_by: Joi.number().integer().positive().required()
         });
