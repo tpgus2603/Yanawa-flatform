@@ -4,7 +4,7 @@ const sequelize = require('../config/sequelize');
 const User = require('../models/User');
 const Friend = require('../models/Friend');
 const Schedule = require('../models/Schedule');
-const scheduleService = require('../services/scheduleService'); // scheduleService 임포트
+const scheduleService = require('./scheduleService'); // scheduleService 임포트
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });
@@ -61,6 +61,7 @@ describe('Schedule Service', () => {
       };
 
       const schedule = await scheduleService.createSchedule(scheduleData);
+      
 
       expect(schedule).toBeDefined();
       expect(schedule.user_id).toBe(2);
@@ -156,19 +157,19 @@ describe('Schedule Service', () => {
 
   describe('deleteSchedule', () => {
     test('should delete an existing schedule successfully', async () => {
-      const result = await scheduleService.deleteSchedule(2, 1);
+        const result = await scheduleService.deleteSchedule(2, 1);
 
-      expect(result).toBe(true);
+        expect(result).toEqual({ message: 'Schedule successfully deleted' });
 
-      // 삭제된 스케줄이 실제로 삭제되었는지 확인
-      const schedule = await Schedule.findByPk(2);
-      expect(schedule).toBeNull();
+        // 삭제된 스케줄이 실제로 삭제되었는지 확인
+        const schedule = await Schedule.findByPk(2);
+        expect(schedule).toBeNull();
     });
 
     test('should throw error when deleting a non-existing schedule', async () => {
-      await expect(scheduleService.deleteSchedule(999, 1)).rejects.toThrow('Schedule not found');
+        await expect(scheduleService.deleteSchedule(999, 1)).rejects.toThrow('Schedule not found');
     });
-  });
+});
 
   describe('getAllSchedules', () => {
     test('should retrieve all valid schedules for a user', async () => {
@@ -192,42 +193,52 @@ describe('Schedule Service', () => {
       await expect(scheduleService.getScheduleById(999, 1)).rejects.toThrow('Schedule not found');
     });
   });
+  // test/schedule.test.js
 
   describe('cleanExpiredSchedules', () => {
     test('should delete expired flexible schedules', async () => {
-      // 만료된 유동 스케줄 생성
-      await Schedule.create({
-        id: 3,
-        user_id: 1,
-        title: 'Expired Flexible Schedule',
-        start_time: new Date('2024-04-25T10:00:00Z'),
-        end_time: new Date('2024-04-25T11:00:00Z'),
-        is_fixed: false,
-        expiry_date: new Date('2024-04-30T00:00:00Z'), // 이미 만료됨
-      });
+        // 현재 날짜를 기준으로 만료된 스케줄과 만료되지 않은 스케줄 생성
+        const now = new Date('2024-05-07T00:00:00Z'); // 테스트를 위한 고정된 현재 날짜
 
-      // 만료되지 않은 유동 스케줄 생성
-      await Schedule.create({
-        id: 4,
-        user_id: 1,
-        title: 'Valid Flexible Schedule',
-        start_time: new Date('2024-05-07T10:00:00Z'),
-        end_time: new Date('2024-05-07T11:00:00Z'),
-        is_fixed: false,
-        expiry_date: new Date('2024-05-14T00:00:00Z'), // 아직 만료되지 않음
-      });
+        // Jest의 Fake Timers를 사용하여 Date를 고정
+        jest.useFakeTimers('modern');
+        jest.setSystemTime(now);
 
-      // 만료된 스케줄 정리
-      await scheduleService.cleanExpiredSchedules();
+        // 만료된 유동 스케줄 생성
+        await Schedule.create({
+            user_id: 1,
+            title: 'Expired Flexible Schedule',
+            start_time: new Date('2024-04-25T10:00:00Z'),
+            end_time: new Date('2024-04-25T11:00:00Z'),
+            is_fixed: false,
+            expiry_date: new Date('2024-05-06T00:00:00Z'), // 이미 만료됨
+        });
 
-      // 만료된 스케줄이 삭제되었는지 확인
-      const expiredSchedule = await Schedule.findByPk(3);
-      expect(expiredSchedule).toBeNull();
+        // 만료되지 않은 유동 스케줄 생성
+        await Schedule.create({
+            user_id: 1,
+            title: 'Valid Flexible Schedule',
+            start_time: new Date('2024-05-07T10:00:00Z'),
+            end_time: new Date('2024-05-07T11:00:00Z'),
+            is_fixed: false,
+            expiry_date: new Date('2024-05-14T00:00:00Z'), // 아직 만료되지 않음
+        });
 
-      // 만료되지 않은 스케줄은 남아있는지 확인
-      const validSchedule = await Schedule.findByPk(4);
-      expect(validSchedule).toBeDefined();
-      expect(validSchedule.title).toBe('Valid Flexible Schedule');
+        // 만료된 스케줄 정리
+        await scheduleService.cleanExpiredSchedules();
+
+        // 만료된 스케줄이 삭제되었는지 확인
+        const expiredSchedule = await Schedule.findOne({ where: { title: 'Expired Flexible Schedule' } });
+        expect(expiredSchedule).toBeNull();
+
+        // 만료되지 않은 스케줄은 남아있는지 확인
+        const validSchedule = await Schedule.findOne({ where: { title: 'Valid Flexible Schedule' } });
+        expect(validSchedule).toBeDefined();
+        expect(validSchedule.title).toBe('Valid Flexible Schedule');
+
+        // Jest의 Fake Timers를 복구
+        jest.useRealTimers();
     });
-  });
+});
+  
 });
