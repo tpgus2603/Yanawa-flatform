@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const express = require('express');
 const session = require('express-session');
-const passport = require('./passport'); // 변경된 경로
+const passport = require('./passport'); 
 const flash = require('connect-flash');
 const { initScheduleCleaner } = require('./utils/scheduler');
 const connectMongoDB = require('./config/mongoose'); // MongoDB 연결
@@ -16,10 +16,10 @@ const app = express();
 // CORS 설정
 app.use(
   cors({
-    origin: 'http://localhost:3000', // 허용할 도메인 설정 (예: 프론트엔드 주소)
+    origin: 'http://localhost:3000', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // 쿠키와 인증 정보를 허용하려면 true로 설정
+    credentials: true,
   })
 );
 
@@ -41,12 +41,10 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 플래시 메시지 (선택 사항)
+
 app.use(flash());
 
-/**
- * 라우터 등록
- */
+//라우터 등록 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
@@ -59,7 +57,7 @@ app.use('/api/friend', friendRoutes);
 const meetingRoutes = require('./routes/meetingRoute');
 app.use('/api/meeting', meetingRoutes);
 
-const chatRoutes = require('./routes/chatRoute');
+//const chatRoutes = require('./routes/chatRoute');
 app.use('/api/chat', chatRoutes);
 
 // 스케줄 클리너 초기화
@@ -72,11 +70,11 @@ const PORT = process.env.PORT || 3000;
   try {
     // MongoDB 연결
     await connectMongoDB();
-    console.log('✅ MongoDB 연결 성공');
+    //console.log('✅ MongoDB 연결 성공');
 
     // MySQL 연결 확인
     await sequelize.authenticate();
-    console.log('✅ MySQL 연결 성공');
+    //console.log('✅ MySQL 연결 성공');
 
     // 서버 시작
     app.listen(PORT, () => {

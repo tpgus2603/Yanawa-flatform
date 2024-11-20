@@ -1,37 +1,33 @@
+// controllers/scheduleController.js
 const ScheduleService = require('../services/scheduleService');
+const ScheduleRequestDTO = require('../dtos/ScheduleRequestDTO');
 
 class scheduleController {
     /**
      * 스케줄 생성
      * POST /api/schedule
-     * 해당 사용자 id는 auth 미들웨어에서 설정된 사용자 정보 이용
-     * req.user = User 모델의 인스턴스
      */
     async createSchedule(req, res) {
         try {
             const userId = req.user.id;
-            const { title, start_time, end_time, is_fixed } = req.body;
+            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+            const validatedData = scheduleRequestDTO.validate('create');
 
-            const schedule = await ScheduleService.createSchedule({
+            const scheduleDTO = await ScheduleService.createSchedule({
                 userId,
-                title,
-                start_time,
-                end_time,
-                is_fixed
+                ...validatedData
             });
 
             return res.status(201).json({
                 success: true,
-                data: {
-                    schedule
-                }
+                data: scheduleDTO
             });
         } catch (error) {
             return res.status(400).json({
                 success: false,
                 error: {
-                    message: error.message,
-                    code: 'SCHEDULE_CREATE_ERROR'
+                    message: error.message.includes('Validation error') ? error.message : 'SCHEDULE_CREATE_ERROR',
+                    code: error.message.includes('Validation error') ? 'VALIDATION_ERROR' : 'SCHEDULE_CREATE_ERROR'
                 }
             });
         }
@@ -44,19 +40,15 @@ class scheduleController {
     async updateSchedule(req, res) {
         try {
             const { id } = req.params;
-            const { title, start_time, end_time } = req.body;
-
             const userId = req.user.id;
-            const schedule = await ScheduleService.updateSchedule(id, userId, 
-                {
-                    title,
-                    start_time,
-                    end_time
-                });
-            
+            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+            const validatedData = scheduleRequestDTO.validate('update');
+
+            const scheduleDTO = await ScheduleService.updateSchedule(id, userId, validatedData);
+
             return res.status(200).json({
                 success: true,
-                data: schedule
+                data: scheduleDTO
             });
         } catch (error) {
             if (error.message === 'Schedule not found') {
@@ -65,6 +57,14 @@ class scheduleController {
                     error: {
                         message: error.message,
                         code: 'SCHEDULE_NOT_FOUND'
+                    }
+                });
+            } else if (error.message.includes('Validation error')) {
+                return res.status(400).json({
+                    success: false,
+                    error: {
+                        message: error.message,
+                        code: 'VALIDATION_ERROR'
                     }
                 });
             }
@@ -87,20 +87,27 @@ class scheduleController {
             const { id } = req.params;
             const userId = req.user.id;
 
-            await ScheduleService.deleteSchedule(id, userId);
+            const deleteResult = await ScheduleService.deleteSchedule(id, userId);
 
             return res.status(200).json({
                 success: true,
-                data: {
-                    message: 'Schedule successfully deleted'
-                }
+                data: deleteResult
             });
         } catch (error) {
-            return res.status(404).json({
+            if (error.message === 'Schedule not found') {
+                return res.status(404).json({
+                    success: false,
+                    error: {
+                        message: error.message,
+                        code: 'SCHEDULE_NOT_FOUND'
+                    }
+                });
+            }
+            return res.status(500).json({
                 success: false,
                 error: {
-                    message: error.message,
-                    code: 'SCHEDULE_NOT_FOUND'
+                    message: 'Failed to delete schedule',
+                    code: 'DELETE_ERROR'
                 }
             });
         }
@@ -113,11 +120,11 @@ class scheduleController {
     async getAllSchedules(req, res) {
         try {
             const userId = req.user.id;
-            const schedules = await ScheduleService.getAllSchedules(userId);
+            const schedulesDTO = await ScheduleService.getAllSchedules(userId);
 
             return res.status(200).json({
                 success: true,
-                data: schedules
+                data: schedulesDTO
             });
         } catch (error) {
             return res.status(500).json({
@@ -138,11 +145,11 @@ class scheduleController {
         try {
             const { id } = req.params;
             const userId = req.user.id;
-            const schedule = await ScheduleService.getScheduleById(id, userId);
+            const scheduleDTO = await ScheduleService.getScheduleById(id, userId);
 
             return res.status(200).json({
                 success: true,
-                data: schedule
+                data: scheduleDTO
             });
         } catch (error) {
             if (error.message === 'Schedule not found') {

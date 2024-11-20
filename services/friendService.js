@@ -6,7 +6,7 @@ const User = require('../models/User');
 const sequelize = require('../config/sequelize');
 
 // DTO 임포트
-const FriendRequestDTO = require('../dtos/FriendRequestDTO');
+const FriendResponseDTO = require('../dtos/FriendResponseDTO');
 const FriendListDTO = require('../dtos/FriendListDTO');
 
 class FriendService {
@@ -28,7 +28,7 @@ class FriendService {
      * 친구 요청 보내기
      * @param {number} userId - 친구 요청을 보내는 사용자 ID
      * @param {number} friendId - 친구 요청을 받는 사용자 ID
-     * @returns {Promise<FriendRequestDTO>} - 생성된 친구 요청 DTO
+     * @returns {Promise<FriendResponseDTO>} - 생성된 친구 요청 DTO
      * @throws {Error} - 유효하지 않은 요청일 경우
      */
     async sendFriendRequest(userId, friendId) {
@@ -71,7 +71,7 @@ class FriendService {
 
             
 
-            return new FriendRequestDTO(friendRequestWithDetails.toJSON());
+            return new FriendResponseDTO(friendRequestWithDetails.toJSON());
         } catch (error) {
             if (error.name === 'SequelizeUniqueConstraintError') {
                 throw new Error('Friend request already exists');
@@ -83,7 +83,7 @@ class FriendService {
     /**
      * 받은 친구 요청 목록 조회
      * @param {number} userId - 요청을 받은 사용자 ID
-     * @returns {Promise<Array<FriendRequestDTO>>} - 받은 친구 요청 목록 DTO 배열
+     * @returns {Promise<Array<FriendResponseDTO>>} - 받은 친구 요청 목록 DTO 배열
      */
     async getReceivedRequests(userId) {
         const receivedRequests = await Friend.findAll({
@@ -97,13 +97,13 @@ class FriendService {
             ]
         });
 
-        return receivedRequests.map(req => new FriendRequestDTO(req));
+        return receivedRequests.map(req => new FriendResponseDTO(req));
     }
 
     /**
      * 보낸 친구 요청 목록 조회
      * @param {number} userId - 요청을 보낸 사용자 ID
-     * @returns {Promise<Array<FriendRequestDTO>>} - 보낸 친구 요청 목록 DTO 배열
+     * @returns {Promise<Array<FriendResponseDTO>>} - 보낸 친구 요청 목록 DTO 배열
      */
     async getSentRequests(userId) {
         const sentRequests = await Friend.findAll({
@@ -117,14 +117,14 @@ class FriendService {
             ]
         });
 
-        return sentRequests.map(req => new FriendRequestDTO(req));
+        return sentRequests.map(req => new FriendResponseDTO(req));
     }
 
     /**
      * 친구 요청 수락
      * @param {number} userId - 요청을 수락하는 사용자 ID
      * @param {number} friendId - 친구 요청을 보낸 사용자 ID
-     * @returns {Promise<FriendRequestDTO>} - 업데이트된 친구 요청 DTO
+     * @returns {Promise<FriendResponseDTO>} - 업데이트된 친구 요청 DTO
      * @throws {Error} - 친구 요청이 존재하지 않을 경우
      */
     async acceptFriendRequest(userId, friendId) {
@@ -155,7 +155,7 @@ class FriendService {
                 ]
             });
 
-            return new FriendRequestDTO(updatedRequest);
+            return new FriendResponseDTO(updatedRequest);
         } catch (error) {
             await transaction.rollback();
             throw error;
