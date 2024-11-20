@@ -69,8 +69,7 @@ class FriendService {
                 ]
             });
 
-            // 디버깅을 위해 로그 추가
-            //console.log('FriendRequestWithDetails:', friendRequestWithDetails.toJSON());
+            
 
             return new FriendRequestDTO(friendRequestWithDetails.toJSON());
         } catch (error) {
@@ -214,13 +213,11 @@ class FriendService {
                     attributes: ['id', 'name', 'email']
                 }
             ],
-            order: [['id', 'ASC']], // 일관된 정렬 순서 추가
+            order: [['id', 'ASC']], 
             limit,
             offset
         });
 
-        // 디버깅을 위해 로그 추가
-        //console.log(`getFriendList: Retrieved ${friends.length} friends with limit=${limit} and offset=${offset}`);
 
         return friends.map(friend => new FriendListDTO(friend, userId));
     }
