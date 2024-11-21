@@ -30,7 +30,7 @@ const Schedule = sequelize.define('Schedule', {
   timestamps: true,  // created_at과 updated_at 자동 관리
 });
 
-Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
+// Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+// User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
 
 module.exports = Schedule;

@@ -2,8 +2,8 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
-const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
-const ChatRoom = require('../models/chatRooms');
+const { Meeting, MeetingParticipant, User, Schedule } = require('../models'); // models/index.js를 통해 임포트
+const ChatRoom = require('../models/ChatRooms');
 const chatController = require('../controllers/chatController');
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
@@ -13,7 +13,8 @@ const ScheduleService = require('./scheduleService'); // ScheduleService 임포�
 class MeetingService {
     /**
      * 번개 모임 생성
-     * @returns 생성된 모임 ID와 채팅방 ID
+     * @param {object} meetingData - 모임 생성 데이터
+     * @returns {Promise<object>} - 생성된 모임 ID와 채팅방 ID
      */
     async createMeeting(meetingData) {
         // DTO를 사용하여 요청 데이터 검증
@@ -39,7 +40,7 @@ class MeetingService {
         }
 
         // 트랜잭션을 사용하여 모임 생성과 스케줄 추가를 원자적으로 처리
-        const result = await Meeting.sequelize.transaction(async (transaction) => {
+        const result = await ScheduleService.withTransaction(async (transaction) => {
             // 채팅방 생성
             const chatRoomData = {
                 participants: [user.name],
@@ -71,14 +72,14 @@ class MeetingService {
                 user_id: created_by,
             }, { transaction });
 
-            // 스케줄 추가
+            // 스케줄 추가 (트랜잭션 전달)
             await ScheduleService.createSchedule({
                 userId: created_by,
                 title: `번개 모임: ${title}`,
                 start_time: new Date(start_time),
                 end_time: new Date(end_time),
                 is_fixed: true,
-            });
+            }, transaction);
 
             return { meeting_id: newMeeting.id, chatRoomId };
         });
@@ -88,7 +89,8 @@ class MeetingService {
 
     /**
      * 번개 모임 목록 조회
-     * @return:모임 목록 DTO 배열
+     * @param {number} userId - 사용자 ID
+     * @returns {Promise<Array<MeetingResponseDTO>>} - 모임 목록 DTO 배열
      */
     async getMeetings(userId) {
         const meetings = await Meeting.findAll({
@@ -122,7 +124,8 @@ class MeetingService {
 
     /**
      * 번개 모임 마감
-     * @returns 마감된 모임 객체
+     * @param {number} meetingId - 모임 ID
+     * @returns {Promise<Meeting>} - 마감된 모임 객체
      */
     async closeMeeting(meetingId) {
         const meeting = await Meeting.findByPk(meetingId);
@@ -139,8 +142,12 @@ class MeetingService {
         return meeting;
     }
 
-  
-    //번개모임 참가 
+    /**
+     * 번개 모임 참가
+     * @param {number} meetingId - 모임 ID
+     * @param {number} userId - 사용자 ID
+     * @returns {Promise<void>}
+     */
     async joinMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
         if (!meeting) {
@@ -164,7 +171,7 @@ class MeetingService {
         }
 
         // 트랜잭션을 사용하여 참가자 추가 및 스케줄 업데이트를 원자적으로 처리
-        await Meeting.sequelize.transaction(async (transaction) => {
+        await ScheduleService.withTransaction(async (transaction) => {
             // 참가자 추가
             await MeetingParticipant.create({ meeting_id: meetingId, user_id: userId }, { transaction });
 
@@ -178,32 +185,33 @@ class MeetingService {
                 throw new Error('스케줄이 겹칩니다. 다른 모임에 참가하세요.');
             }
 
-            // 스케줄 추가
+            // 스케줄 추가 (트랜잭션 전달)
             await ScheduleService.createSchedule({
                 userId: userId,
                 title: `번개 모임: ${meeting.title}`,
                 start_time: new Date(meeting.start_time),
                 end_time: new Date(meeting.end_time),
                 is_fixed: true,
-            });
+            }, transaction);
 
             // 채팅방 참가
-            const user = await User.findOne({ where: { id: userId } });
-            const chatRoom = await ChatRoom.findOne({ where: { meeting_id: meetingId } });
+            const user = await User.findOne({ where: { id: userId }, transaction });
+            const chatRoom = await ChatRoom.findOne({ where: { meeting_id: meetingId }, transaction });
 
             if (chatRoom && !chatRoom.participants.includes(user.name)) {
                 chatRoom.participants.push(user.name);
                 chatRoom.isOnline.set(user.name, true);
                 chatRoom.lastReadAt.set(user.name, new Date());
                 chatRoom.lastReadLogId.set(user.name, null);
-                await chatRoom.save();
+                await chatRoom.save({ transaction });
             }
         });
     }
 
     /**
      * 번개 모임 상세 조회
-     * @return 모임 상세 DTO
+     * @param {number} meetingId - 모임 ID
+     * @returns {Promise<MeetingDetailResponseDTO>} - 모임 상세 DTO
      */
     async getMeetingDetail(meetingId) {
         const meeting = await Meeting.findByPk(meetingId, {

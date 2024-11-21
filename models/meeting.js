@@ -44,9 +44,9 @@ const Meeting = sequelize.define('Meeting', {
 });
 
 
-// 연관 관계 설정
-Meeting.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
-User.hasMany(Meeting, { foreignKey: 'created_by', as: 'meetings' });
+// // 연관 관계 설정
+// Meeting.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+// User.hasMany(Meeting, { foreignKey: 'created_by', as: 'meetings' });
 
 module.exports = Meeting;
 

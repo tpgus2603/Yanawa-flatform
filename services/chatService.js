@@ -1,4 +1,4 @@
-const ChatRoom = require('../models/chatRooms');
+const ChatRoom = require('../models/ChatRooms');
 const { v4: uuidv4 } = require('uuid');
 
 class ChatService {

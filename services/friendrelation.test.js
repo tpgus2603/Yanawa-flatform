@@ -1,8 +1,7 @@
 // test/friend.test.js
 
 const sequelize = require('../config/sequelize'); // 환경 변수에 따라 다른 인스턴스 사용
-const User = require('../models/User');
-const Friend = require('../models/Friend');
+const { Friend,User} = require('../models');
 
 beforeAll(async () => {
   // 데이터베이스 동기화
