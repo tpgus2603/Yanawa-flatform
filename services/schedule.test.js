@@ -1,237 +1,367 @@
-// test/schedule.test.js
-const sequelize = require('../config/sequelize');
-const {User, Friend, Schedule,} = require('../models'); 
-const scheduleService = require('../services/scheduleService'); // 경로 수정
+// test/scheduleService.test.js
+const sequelize = require('../config/sequelize'); // 실제 경로에 맞게 수정
+const { Schedule, User } = require('../models');
+const ScheduleService = require('../services/scheduleService'); // Uppercase 'S'로 가져오기
+const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
 
 beforeAll(async () => {
+    // 테스트 스위트가 시작되기 전에 데이터베이스를 동기화합니다.
     await sequelize.sync({ force: true });
+});
+
+beforeEach(async () => {
+    // 각 테스트가 시작되기 전에 기존 데이터를 삭제합니다.
+    await Schedule.destroy({ where: {} });
+    await User.destroy({ where: {} });
 
     // 더미 사용자 생성
     await User.bulkCreate([
         { id: 1, name: 'Alice', email: 'alice@example.com' },
         { id: 2, name: 'Bob', email: 'bob@example.com' },
+        { id: 3, name: 'Charlie', email: 'charlie@example.com' },
     ]);
 
-    // 더미 친구 관계 생성
-    await Friend.create({
-        id: 1,
-        requester_id: 1,
-        receiver_id: 2,
-        status: 'ACCEPTED',
-    });
-
-    // 더미 스케줄 생성 (day_of_week과 TIME 형식 사용)
-    await Schedule.create({
-        id: 1,
-        user_id: 1,
-        title: 'Alice\'s Fixed Schedule',
-        day_of_week: 'Monday',
-        start_time: '09:00:00', // 'HH:MM:SS' 형식
-        end_time: '10:00:00',
-        is_fixed: true,
-    });
-
-    await Schedule.create({
-        id: 2,
-        user_id: 1,
-        title: 'Alice\'s Flexible Schedule',
-        day_of_week: 'Tuesday',
-        start_time: '11:00:00',
-        end_time: '12:00:00',
-        is_fixed: false,
-    });
+    // 더미 스케줄 생성
+    await Schedule.bulkCreate([
+        { id: 1, user_id: 1, title: 'Alice Fixed Schedule 1', time_idx: 36, is_fixed: true },
+        { id: 2, user_id: 1, title: 'Alice Flexible Schedule 1', time_idx: 44, is_fixed: false },
+        { id: 3, user_id: 2, title: 'Bob Fixed Schedule 1', time_idx: 60, is_fixed: true },
+        { id: 4, user_id: 2, title: 'Bob Flexible Schedule 1', time_idx: 61, is_fixed: false },
+        { id: 5, user_id: 3, title: 'Charlie Fixed Schedule 1', time_idx: 100, is_fixed: true },
+    ]);
 });
 
 afterAll(async () => {
-    // 데이터베이스 연결 종료
+    // 모든 테스트가 끝난 후 데이터베이스 연결을 종료합니다.
     await sequelize.close();
 });
 
-describe('Schedule Service', () => {
+describe('ScheduleService', () => {
     describe('createSchedules', () => {
-        test('should create new fixed schedules successfully', async () => {
+        test('should create multiple new fixed schedules successfully', async () => {
             const scheduleData = {
-                userId: 2,
-                title: 'Bob\'s Fixed Schedule',
+                userId: 1,
+                title: 'Alice Fixed Schedule Bulk',
                 is_fixed: true,
                 events: [
-                    {
-                        day_of_week: 'Wednesday',
-                        start_time: '14:00:00',
-                        end_time: '15:00:00',
-                    },
+                    { time_idx: 50 }, // Valid time_idx
+                    { time_idx: 51 },
                 ],
             };
 
-            const schedules = await scheduleService.createSchedules(scheduleData);
+            const schedules = await ScheduleService.createSchedules(scheduleData);
 
             expect(schedules).toBeDefined();
             expect(Array.isArray(schedules)).toBe(true);
-            expect(schedules.length).toBe(1);
+            expect(schedules.length).toBe(2);
 
-            const schedule = schedules[0];
-            expect(schedule.user_id).toBe(2);
-            expect(schedule.title).toBe('Bob\'s Fixed Schedule');
-            expect(schedule.is_fixed).toBe(true);
-            expect(schedule.day_of_week).toBe('Wednesday');
-            expect(schedule.start_time).toBe('14:00');
-            expect(schedule.end_time).toBe('15:00');
+            schedules.forEach((schedule, index) => {
+                expect(schedule.user_id).toBe(1);
+                expect(schedule.title).toBe('Alice Fixed Schedule Bulk');
+                expect(schedule.is_fixed).toBe(true);
+                expect(schedule.time_idx).toBe(scheduleData.events[index].time_idx);
+            });
+
+            // 데이터베이스에 실제로 추가되었는지 확인
+            const dbSchedules = await Schedule.findAll({
+                where: { user_id: 1, title: 'Alice Fixed Schedule Bulk' },
+            });
+            expect(dbSchedules.length).toBe(2);
         });
 
-        test('should create new flexible schedules successfully', async () => {
+        test('should create multiple new flexible schedules successfully', async () => {
             const scheduleData = {
                 userId: 2,
-                title: 'Bob\'s Flexible Schedule',
+                title: 'Bob Flexible Schedule Bulk',
                 is_fixed: false,
                 events: [
-                    {
-                        day_of_week: 'Thursday',
-                        start_time: '16:00:00',
-                        end_time: '17:00:00',
-                    },
+                    { time_idx: 62 },
+                    { time_idx: 63 },
                 ],
             };
 
-            const schedules = await scheduleService.createSchedules(scheduleData);
+            const schedules = await ScheduleService.createSchedules(scheduleData);
 
             expect(schedules).toBeDefined();
             expect(Array.isArray(schedules)).toBe(true);
-            expect(schedules.length).toBe(1);
+            expect(schedules.length).toBe(2);
 
-            const schedule = schedules[0];
-            expect(schedule.user_id).toBe(2);
-            expect(schedule.title).toBe('Bob\'s Flexible Schedule');
-            expect(schedule.is_fixed).toBe(false);
-            expect(schedule.day_of_week).toBe('Thursday');
-            expect(schedule.start_time).toBe('16:00');
-            expect(schedule.end_time).toBe('17:00');
+            schedules.forEach((schedule, index) => {
+                expect(schedule.user_id).toBe(2);
+                expect(schedule.title).toBe('Bob Flexible Schedule Bulk');
+                expect(schedule.is_fixed).toBe(false);
+                expect(schedule.time_idx).toBe(scheduleData.events[index].time_idx);
+            });
+
+            // 데이터베이스에 실제로 추가되었는지 확인
+            const dbSchedules = await Schedule.findAll({
+                where: { user_id: 2, title: 'Bob Flexible Schedule Bulk' },
+            });
+            expect(dbSchedules.length).toBe(2);
         });
 
-        test('should throw error when schedule times overlap with existing schedule', async () => {
+        test('should throw error when creating schedules with overlapping time_idx', async () => {
             const scheduleData = {
                 userId: 1,
-                title: 'Alice\'s Overlapping Schedule',
+                title: 'Alice Overlapping Schedule',
                 is_fixed: false,
                 events: [
-                    {
-                        day_of_week: 'Monday', // 기존 스케줄과 동일한 요일
-                        start_time: '09:30:00', // 기존 스케줄과 겹치는 시간
-                        end_time: '10:30:00',
-                    },
+                    { time_idx: 36 }, // Existing schedule for Alice
                 ],
             };
 
-            await expect(scheduleService.createSchedules(scheduleData))
+            await expect(ScheduleService.createSchedules(scheduleData))
                 .rejects
-                .toThrow('Schedule overlaps with existing schedule on Monday');
+                .toThrow('Schedule overlaps with existing schedule at time_idx 36');
         });
 
-        test('should throw error when start_time is after end_time', async () => {
+        test('should throw error when creating schedules with invalid time_idx', async () => {
             const scheduleData = {
                 userId: 1,
-                title: 'Invalid Schedule',
+                title: 'Alice Invalid Schedule',
                 is_fixed: false,
                 events: [
-                    {
-                        day_of_week: 'Friday',
-                        start_time: '18:00:00',
-                        end_time: '17:00:00', // start_time이 더 늦음
-                    },
+                    { time_idx: 700 }, // Invalid time_idx
                 ],
             };
 
-            await expect(scheduleService.createSchedules(scheduleData))
+            await expect(ScheduleService.createSchedules(scheduleData))
                 .rejects
-                .toThrow('Start time must be before end time');
+                .toThrow('Validation error: Validation max on time_idx failed');
         });
     });
 
-    describe('updateSchedule', () => {
-        test('should update an existing schedule successfully', async () => {
+    describe('updateSchedules', () => {
+        test('should update multiple existing schedules successfully', async () => {
             const updateData = {
-                title: 'Alice\'s Updated Flexible Schedule',
-                start_time: '11:30:00',
-                end_time: '12:30:00',
+                updates: [
+                    { time_idx: 36, title: 'Alice Updated Fixed Schedule', is_fixed: true },
+                    { time_idx: 44, title: 'Alice Updated Flexible Schedule', is_fixed: false },
+                ],
             };
 
-            const updatedSchedule = await scheduleService.updateSchedule(2, 1, updateData);
+            const updatedSchedules = await ScheduleService.updateSchedules(1, updateData.updates);
 
-            expect(updatedSchedule).toBeDefined();
-            expect(updatedSchedule.title).toBe('Alice\'s Updated Flexible Schedule');
-            expect(updatedSchedule.start_time).toBe('11:30');
-            expect(updatedSchedule.end_time).toBe('12:30');
+            expect(updatedSchedules).toBeDefined();
+            expect(Array.isArray(updatedSchedules)).toBe(true);
+            expect(updatedSchedules.length).toBe(2);
+
+            updatedSchedules.forEach((schedule, index) => {
+                expect(schedule.title).toBe(updateData.updates[index].title);
+                expect(schedule.is_fixed).toBe(updateData.updates[index].is_fixed);
+                expect(schedule.time_idx).toBe(updateData.updates[index].time_idx);
+            });
+
+            // 데이터베이스에서 업데이트 확인
+            const dbSchedule1 = await Schedule.findOne({ where: { user_id: 1, time_idx: 36 } });
+            const dbSchedule2 = await Schedule.findOne({ where: { user_id: 1, time_idx: 44 } });
+
+            expect(dbSchedule1.title).toBe('Alice Updated Fixed Schedule');
+            expect(dbSchedule2.title).toBe('Alice Updated Flexible Schedule');
         });
 
         test('should throw error when updating a non-existing schedule', async () => {
             const updateData = {
-                title: 'Non-existing Schedule',
-                start_time: '10:00:00',
-                end_time: '11:00:00',
+                updates: [
+                    { time_idx: 999, title: 'Non-existing Schedule' },
+                ],
             };
 
-            await expect(scheduleService.updateSchedule(999, 1, updateData))
+            await expect(ScheduleService.updateSchedules(1, updateData.updates))
                 .rejects
-                .toThrow('Schedule not found');
+                .toMatchObject({ message: 'Schedule not found at time_idx 999' });
         });
 
-        test('should throw error when updated schedule overlaps with existing schedule', async () => {
-            const updateData = {
-                title: 'Alice\'s Overlapping Update',
-                start_time: '09:30:00', // 기존 스케줄과 겹침
-                end_time: '10:30:00',
+        test('should throw error when creating schedules with overlapping time_idx', async () => {
+            // 먼저, 새로운 스케줄을 생성하여 time_idx 50을 사용
+            await ScheduleService.createSchedules({
+                userId: 1,
+                title: 'Alice Another Schedule',
+                is_fixed: false,
+                events: [
+                    { time_idx: 50 },
+                ],
+            });
+
+            // 동일한 time_idx로 스케줄을 생성하려 할 때 오류가 발생하는지 테스트
+            const scheduleData = {
+                userId: 1,
+                title: 'Alice Overlapping Schedule',
+                is_fixed: false,
+                events: [
+                    { time_idx: 50 }, // 이미 존재하는 time_idx
+                ],
             };
 
-            await expect(scheduleService.updateSchedule(2, 1, updateData))
+            await expect(ScheduleService.createSchedules(scheduleData))
                 .rejects
-                .toThrow('Schedule overlaps with existing schedule');
+                .toThrow('Schedule overlaps with existing schedule at time_idx 50');
         });
     });
 
-    describe('deleteSchedule', () => {
-        test('should delete an existing schedule successfully', async () => {
-            const result = await scheduleService.deleteSchedule(2, 1);
+    describe('deleteSchedules', () => {
+        test('should delete multiple existing schedules successfully', async () => {
+            // 먼저, 스케줄 생성
+            await ScheduleService.createSchedules({
+                userId: 1,
+                title: 'Alice Bulk Delete Schedule 1',
+                is_fixed: false,
+                events: [
+                    { time_idx: 70 },
+                    { time_idx: 71 },
+                ],
+            });
 
-            expect(result).toEqual({ message: 'Schedule successfully deleted' });
+            const deleteData = {
+                time_idxs: [70, 71],
+            };
 
-            // 삭제된 스케줄이 실제로 삭제되었는지 확인
-            const schedule = await Schedule.findByPk(2);
-            expect(schedule).toBeNull();
+            const result = await ScheduleService.deleteSchedules(1, deleteData.time_idxs);
+
+            expect(result).toBeDefined();
+            expect(result.deleted_time_idxs).toContain(70);
+            expect(result.deleted_time_idxs).toContain(71);
+
+            // 데이터베이스에서 삭제 확인
+            const dbSchedule1 = await Schedule.findOne({ where: { user_id: 1, time_idx: 70 } });
+            const dbSchedule2 = await Schedule.findOne({ where: { user_id: 1, time_idx: 71 } });
+
+            expect(dbSchedule1).toBeNull();
+            expect(dbSchedule2).toBeNull();
         });
 
         test('should throw error when deleting a non-existing schedule', async () => {
-            await expect(scheduleService.deleteSchedule(999, 1))
+            const deleteData = {
+                time_idxs: [999],
+            };
+
+            await expect(ScheduleService.deleteSchedules(1, deleteData.time_idxs))
                 .rejects
-                .toThrow('Schedule not found');
+                .toThrow('Schedule not found at time_idx 999');
         });
     });
 
     describe('getAllSchedules', () => {
-        test('should retrieve all valid schedules for a user', async () => {
-            // 사용자 Alice의 모든 스케줄 조회 (user_id: 1)
-            const schedules = await scheduleService.getAllSchedules(1);
+        test('should retrieve all schedules for a user', async () => {
+            // Update schedules first
+            const updateData = {
+                updates: [
+                    { time_idx: 36, title: 'Alice Updated Fixed Schedule', is_fixed: true },
+                    { time_idx: 44, title: 'Alice Updated Flexible Schedule', is_fixed: false },
+                ],
+            };
+
+            await ScheduleService.updateSchedules(1, updateData.updates);
+
+            const schedules = await ScheduleService.getAllSchedules(1);
 
             expect(schedules).toBeDefined();
             expect(Array.isArray(schedules)).toBe(true);
-            expect(schedules.length).toBe(1); // id=1 스케줄은 is_fixed=true
-            expect(schedules[0].title).toBe('Alice\'s Fixed Schedule');
-            expect(schedules[0].day_of_week).toBe('Monday');
+
+            // 현재 Alice는 id=1, time_idx=36 (fixed), time_idx=44 (flexible)이 존재
+            expect(schedules.length).toBe(2);
+
+            const schedule1 = schedules.find(s => s.time_idx === 36);
+            const schedule2 = schedules.find(s => s.time_idx === 44);
+
+            expect(schedule1).toBeDefined();
+            expect(schedule1.title).toBe('Alice Updated Fixed Schedule');
+
+            expect(schedule2).toBeDefined();
+            expect(schedule2.title).toBe('Alice Updated Flexible Schedule');
+        });
+
+        test('should retrieve one schedule when user has only one', async () => {
+            const schedules = await ScheduleService.getAllSchedules(3); // Charlie has id=3 and only one fixed schedule
+
+            expect(schedules).toBeDefined();
+            expect(Array.isArray(schedules)).toBe(true);
+            expect(schedules.length).toBe(1);
+
+            expect(schedules[0].title).toBe('Charlie Fixed Schedule 1');
         });
     });
 
-    describe('getScheduleById', () => {
-        test('should retrieve a specific schedule by ID', async () => {
-            const schedule = await scheduleService.getScheduleById(1, 1);
+    describe('getScheduleByTimeIdx', () => {
+        test('should retrieve a specific schedule by time_idx', async () => {
+            // Update schedule first
+            const updateData = {
+                updates: [
+                    { time_idx: 36, title: 'Alice Updated Fixed Schedule', is_fixed: true },
+                ],
+            };
+
+            await ScheduleService.updateSchedules(1, updateData.updates);
+
+            const schedule = await ScheduleService.getScheduleByTimeIdx(1, 36);
 
             expect(schedule).toBeDefined();
-            expect(schedule.title).toBe('Alice\'s Fixed Schedule');
-            expect(schedule.day_of_week).toBe('Monday');
+            expect(schedule.title).toBe('Alice Updated Fixed Schedule');
+            expect(schedule.time_idx).toBe(36);
         });
 
         test('should throw error when retrieving a non-existing schedule', async () => {
-            await expect(scheduleService.getScheduleById(999, 1))
+            await expect(ScheduleService.getScheduleByTimeIdx(1, 999))
                 .rejects
                 .toThrow('Schedule not found');
         });
     });
 
+    describe('cleanExpiredSchedules', () => {
+        test('should delete all flexible schedules', async () => {
+            // 먼저, 여러 유동 스케줄을 생성
+            await ScheduleService.createSchedules({
+                userId: 1,
+                title: 'Alice Flexible Schedule 2',
+                is_fixed: false,
+                events: [
+                    { time_idx: 80 },
+                    { time_idx: 81 },
+                ],
+            });
+
+            await ScheduleService.createSchedules({
+                userId: 2,
+                title: 'Bob Flexible Schedule 2',
+                is_fixed: false,
+                events: [
+                    { time_idx: 90 },
+                    { time_idx: 91 },
+                ],
+            });
+
+            // 유동 스케줄 삭제
+            await ScheduleService.cleanExpiredSchedules();
+
+            // 데이터베이스에서 유동 스케줄이 모두 삭제되었는지 확인
+            const remainingFlexibleSchedules = await Schedule.findAll({
+                where: { is_fixed: false },
+            });
+
+            expect(remainingFlexibleSchedules.length).toBe(0);
+        });
+
+        test('should not delete fixed schedules', async () => {
+            // 먼저, 여러 고정 스케줄을 생성
+            await ScheduleService.createSchedules({
+                userId: 3,
+                title: 'Charlie Fixed Schedule 2',
+                is_fixed: true,
+                events: [
+                    { time_idx: 120 },
+                    { time_idx: 121 },
+                ],
+            });
+
+            // 유동 스케줄 삭제
+            await ScheduleService.cleanExpiredSchedules();
+
+            // 데이터베이스에서 고정 스케줄이 유지되었는지 확인
+            const remainingFixedSchedules = await Schedule.findAll({
+                where: { user_id: 3, is_fixed: true },
+            });
+
+            expect(remainingFixedSchedules.length).toBe(3); // 기존 1개 + 2개 추가
+        });
+    });
 });

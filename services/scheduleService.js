@@ -60,9 +60,7 @@ class ScheduleService {
                     throw { code: 'SCHEDULE_NOT_FOUND', message: `Schedule not found at time_idx ${time_idx}` };
                 }
 
-                // 중복 스케줄 검사 (time_idx는 고유하므로 필요 없음)
-                // 만약 다른 필드를 기반으로 중복을 검사한다면 추가 로직 필요
-
+            
                 const updatedData = {};
                 if (title !== undefined) updatedData.title = title;
                 if (is_fixed !== undefined) updatedData.is_fixed = is_fixed;
