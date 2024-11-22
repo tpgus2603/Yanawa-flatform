@@ -1,22 +1,19 @@
-// dtos/MeetingDetailResponseDTO.js
+// dtos/MeetingResponseDTO.js
 
-class MeetingDetailResponseDTO {
-  constructor(meeting) {
+class MeetingResponseDTO {
+  constructor(meeting, isParticipant, isScheduleConflict, creatorName) {
       this.id = meeting.id;
       this.title = meeting.title;
       this.description = meeting.description;
-      this.startTime = meeting.start_time;
-      this.endTime = meeting.end_time;
+      this.timeIdxStart = meeting.time_idx_start; // 변경된 필드
+      this.timeIdxEnd = meeting.time_idx_end;     // 변경된 필드
       this.location = meeting.location;
       this.deadline = meeting.deadline;
       this.type = meeting.type;
-      this.creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-      this.participants = meeting.participants.map(participant => ({
-          userId: participant.user_id,
-          name: participant.participantUser ? participant.participantUser.name : 'Unknown',
-          email: participant.participantUser ? participant.participantUser.email : 'Unknown'
-      }));
+      this.creatorName = creatorName;
+      this.isParticipant = isParticipant;
+      this.isScheduleConflict = isScheduleConflict;
   }
 }
 
-module.exports = MeetingDetailResponseDTO;
+module.exports = MeetingResponseDTO;
