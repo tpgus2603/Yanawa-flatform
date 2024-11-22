@@ -2,8 +2,7 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
-const { Meeting, MeetingParticipant, User, Schedule } = require('../models'); // models/index.js를 통해 임포트
-const ChatRoom = require('../models/ChatRooms');
+const { Meeting, MeetingParticipant, User, Schedule, ChatRoom } = require('../models'); // models/index.js를 통해 임포트
 const chatController = require('../controllers/chatController');
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
