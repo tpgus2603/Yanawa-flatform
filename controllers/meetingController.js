@@ -10,7 +10,7 @@ class MeetingController {
      */
     async createMeeting(req, res) {
         try {
-            const userId = req.userId; // 인증 미들웨어를 통해 설정된 사용자 ID
+            const userId = req.user.id;
             const meetingData = { ...req.body, created_by: userId };
 
             // CreateMeetingRequestDTO를 사용하여 요청 데이터 검증
@@ -31,7 +31,7 @@ class MeetingController {
      */
     async getMeetings(req, res) {
         try {
-            const userId = req.userId; // 인증 미들웨어를 통해 설정된 사용자 ID
+            const userId = req.user.id; // 인증 미들웨어를 통해 설정된 사용자 ID
 
             const meetings = await MeetingService.getMeetings(userId);
             res.status(200).json(meetings);
@@ -64,7 +64,7 @@ class MeetingController {
     async joinMeeting(req, res) {
         try {
             const { meetingId } = req.params;
-            const userId = req.userId; // 인증 미들웨어를 통해 설정된 사용자 ID
+            const userId = req.user.id; // 인증 미들웨어를 통해 설정된 사용자 ID
 
             await MeetingService.joinMeeting(meetingId, userId);
             res.status(200).json({ message: '모임 및 채팅방 참가 완료' });

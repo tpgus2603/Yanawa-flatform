@@ -4,7 +4,6 @@ const sequelize = require('../config/sequelize'); // Sequelize 인스턴스 임�
 // const User = require('../models/User');
 // const Friend = require('../models/Friend');
 const { Friend,User} = require('../models');
-
 const friendService = require('./friendService'); // FriendService 임포트
 
 // Sequelize의 Op를 가져오기 위해 추가
