@@ -1,10 +1,7 @@
 // dto/FriendListDTO.js
 
 class FriendListDTO {
-  /**
-   * @param {object} friend - Friend relationship object retrieved from the database.
-   * @param {number} userId - The ID of the user whose friend list is being retrieved.
-   */
+ 
   constructor(friend, userId) {
       this.id = friend.id;
       this.status = friend.status;

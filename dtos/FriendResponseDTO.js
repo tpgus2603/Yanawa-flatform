@@ -1,25 +1,23 @@
-// dto/FriendRequestDTO.js
+// dto/FriendResponseDTO.js
 
-class FriendRequestDTO {
-  /**
-   * @param {object} friendRequest - Friend request object retrieved from the database.
-   */
-  constructor(friendRequest) {
-      this.id = friendRequest.id;
+class FriendResponseDTO {
+
+  constructor(friendResponse) {
+      this.id = friendResponse.id;
       this.requester = {
-          id: friendRequest.requester.id,
-          name: friendRequest.requester.name,
-          email: friendRequest.requester.email
+          id: friendResponse.requester.id,
+          name: friendResponse.requester.name,
+          email: friendResponse.requester.email
       };
       this.receiver = {
-          id: friendRequest.receiver.id,
-          name: friendRequest.receiver.name,
-          email: friendRequest.receiver.email
+          id: friendResponse.receiver.id,
+          name: friendResponse.receiver.name,
+          email: friendResponse.receiver.email
       };
-      this.status = friendRequest.status;
-      this.createdAt = friendRequest.createdAt;
-      this.updatedAt = friendRequest.updatedAt;
+      this.status = friendResponse.status;
+      this.createdAt = friendResponse.createdAt;
+      this.updatedAt = friendResponse.updatedAt;
   }
 }
 
-module.exports = FriendRequestDTO;
+module.exports = FriendResponseDTO;
