@@ -4,9 +4,6 @@ class friendController {
         /**
          * 친구 요청 보내기
          * 클라이언트는 userId와 요청을 보낼 사용자의 email을 전송
-         * @param {Object} req - Express 요청 객체
-         * @param {Object} res - Express 응답 객체
-         * @param {Function} next - Express next 미들웨어 함수
          */
         async sendFriendRequest(req, res, next) {
             const { userId, email } = req.body;
@@ -140,13 +137,12 @@ class friendController {
 
     /**
      * 친구 목록 조회
-     * GET /api/friend/all
+     * GET /api/friend/all/:offset
      */
     async getFriendList(req, res) {
         try {
             const userId = req.user.id;
-            const friends = await FriendService.getFriendList(userId);
-
+            const friends = await FriendService.getFriendList(userId,20,req.param);
             return res.status(200).json({
                 success: true,
                 data: friends
