@@ -32,7 +32,6 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-    // 모든 테스트가 끝난 후 데이터베이스 연결을 종료합니다.
     await sequelize.close();
 });
 
@@ -272,7 +271,7 @@ describe('ScheduleService', () => {
         });
 
         test('should retrieve one schedule when user has only one', async () => {
-            const schedules = await ScheduleService.getAllSchedules(3); // Charlie has id=3 and only one fixed schedule
+            const schedules = await ScheduleService.getAllSchedules(3); 
 
             expect(schedules).toBeDefined();
             expect(Array.isArray(schedules)).toBe(true);
@@ -309,7 +308,7 @@ describe('ScheduleService', () => {
 
     describe('cleanExpiredSchedules', () => {
         test('should delete all flexible schedules', async () => {
-            // 먼저, 여러 유동 스케줄을 생성
+            // 여러 유동 스케줄을 생성
             await ScheduleService.createSchedules({
                 userId: 1,
                 title: 'Alice Flexible Schedule 2',
@@ -342,7 +341,7 @@ describe('ScheduleService', () => {
         });
 
         test('should not delete fixed schedules', async () => {
-            // 먼저, 여러 고정 스케줄을 생성
+            // 여러 고정 스케줄을 생성
             await ScheduleService.createSchedules({
                 userId: 3,
                 title: 'Charlie Fixed Schedule 2',
@@ -361,7 +360,7 @@ describe('ScheduleService', () => {
                 where: { user_id: 3, is_fixed: true },
             });
 
-            expect(remainingFixedSchedules.length).toBe(3); // 기존 1개 + 2개 추가
+            expect(remainingFixedSchedules.length).toBe(3); 
         });
     });
 });

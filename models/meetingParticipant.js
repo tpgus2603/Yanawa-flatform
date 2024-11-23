@@ -1,30 +1,27 @@
-// models/MeetingParticipant.js
-
 const { DataTypes } = require('sequelize');
-const sequelize  = require('../config/sequelize');
-const Meeting =require('./Meeting');
-const User = require('./User');
+const sequelize = require('../config/sequelize');
 
-
-const MeetingParticipant = sequelize.define('MeetingParticipant', {
-  meeting_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+const MeetingParticipant = sequelize.define(
+  'MeetingParticipant',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    meeting_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
-  user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+  {
+    tableName: 'MeetingParticipants', // 테이블 이름 설정
+    timestamps: false, // createdAt, updatedAt 필드 비활성화
   }
-}, {
-  tableName: 'MeetingParticipants',
-  timestamps: false,
-});
-
-// MeetingParticipant.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
-// Meeting.hasMany(MeetingParticipant, { foreignKey: 'meeting_id', as: 'participants' });
-
-// MeetingParticipant.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-// User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipations' });
-
+);
 
 module.exports = MeetingParticipant;
