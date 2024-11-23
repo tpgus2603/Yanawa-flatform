@@ -131,31 +131,21 @@ class ScheduleService {
 
         return !!overlappingSchedule;
     }
-    
+
     async checkScheduleOverlapByTime(userId, time_idx_start, time_idx_end, transaction = null) {
         const overlappingSchedule = await Schedule.findOne({
             where: {
                 user_id: userId,
-                [Op.or]: [
-                    {
-                        time_idx_start: { [Op.between]: [time_idx_start, time_idx_end] }
-                    },
-                    {
-                        time_idx_end: { [Op.between]: [time_idx_start, time_idx_end] }
-                    },
-                    {
-                        [Op.and]: [
-                            { time_idx_start: { [Op.lte]: time_idx_start } },
-                            { time_idx_end: { [Op.gte]: time_idx_end } }
-                        ]
-                    }
-                ]
+                time_idx: {
+                    [Op.between]: [time_idx_start, time_idx_end] 
+                }
             },
             transaction,
         });
-
+    
         return !!overlappingSchedule;
     }
+    
 
     /**
      * 만료된 스케줄 삭제

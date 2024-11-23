@@ -3,17 +3,18 @@ const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const sequelize = require('../config/sequelize'); // 트랜잭션 관리를 위해 sequelize 인스턴스 필요
 const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
-const ChatRooms = require('../models/ChatRooms'); 
+const ChatRooms = require('../models/ChatRooms');
+
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
 const CreateMeetingRequestDTO = require('../dtos/CreateMeetingRequestDTO');
-const ScheduleService = require('./scheduleService'); 
+const ScheduleService = require('./scheduleService');
 
 class MeetingService {
     /**
      * 현재 시간을 time_idx로 변환하는 유틸리티 함수
      * 월요일부터 일요일까지 15분 단위로 타임 인덱스를 할당
-     *  현재 시간의 타임 인덱스 (0 ~ 671)
+     * 현재 시간의 타임 인덱스 (0 ~ 671)
      */
     getCurrentTimeIdx() {
         const today = new Date();
@@ -36,7 +37,16 @@ class MeetingService {
         const createMeetingDTO = new CreateMeetingRequestDTO(meetingData);
         createMeetingDTO.validate();
 
-        const { title, description, time_idx_start, time_idx_end, location, time_idx_deadline, type, created_by } = meetingData;
+        const {
+            title,
+            description,
+            time_idx_start,
+            time_idx_end,
+            location,
+            time_idx_deadline,
+            type,
+            created_by,
+        } = meetingData;
 
         // 사용자 존재 여부 확인
         const user = await User.findOne({ where: { id: created_by } });
@@ -54,40 +64,51 @@ class MeetingService {
                 messages: [],
                 lastReadAt: {},
                 lastReadLogId: {},
-                isOnline: {}
+                isOnline: {},
             };
             const chatRoom = new ChatRooms(chatRoomData);
             await chatRoom.save();
 
             // 모임 생성
-            const newMeeting = await Meeting.create({
-                title,
-                description,
-                time_idx_start,
-                time_idx_end,
-                location,
-                time_idx_deadline,
-                type,
-                created_by,
-                chatRoomId,
-            }, { transaction });
+            const newMeeting = await Meeting.create(
+                {
+                    title,
+                    description,
+                    time_idx_start,
+                    time_idx_end,
+                    location,
+                    time_idx_deadline,
+                    type,
+                    created_by,
+                    chatRoomId,
+                },
+                { transaction }
+            );
 
             // 모임 참가자 추가 (생성자 자신)
-            await MeetingParticipant.create({
-                meeting_id: newMeeting.id,
-                user_id: created_by,
-            }, { transaction });
+            await MeetingParticipant.create(
+                {
+                    meeting_id: newMeeting.id,
+                    user_id: created_by,
+                },
+                { transaction }
+            );
 
-            // 스케줄 생성
-            await ScheduleService.createSchedules({
-                userId: created_by,
-                title: `번개 모임: ${title}`,
-                is_fixed: true,
-                events: [
-                    { time_idx: time_idx_start },
-                    { time_idx: time_idx_end },
-                ],
-            }, transaction);
+            // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
+            const events = [];
+            for (let idx = time_idx_start; idx <= time_idx_end; idx++) {
+                events.push({ time_idx: idx });
+            }
+
+            await ScheduleService.createSchedules(
+                {
+                    userId: created_by,
+                    title: `번개 모임: ${title}`,
+                    is_fixed: false,
+                    events: events,
+                },
+                transaction
+            );
 
             return { meeting_id: newMeeting.id, chatRoomId };
         });
@@ -102,7 +123,16 @@ class MeetingService {
      */
     async getMeetings(userId) {
         const meetings = await Meeting.findAll({
-            attributes: ['id', 'title', 'description', 'time_idx_start', 'time_idx_end', 'location', 'time_idx_deadline', 'type'],
+            attributes: [
+                'id',
+                'title',
+                'description',
+                'time_idx_start',
+                'time_idx_end',
+                'location',
+                'time_idx_deadline',
+                'type',
+            ],
             include: [
                 {
                     model: User,
@@ -119,14 +149,11 @@ class MeetingService {
 
         return meetings.map((meeting) => {
             const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-            const isParticipant = meeting.participants.some(participant => participant.user_id === parseInt(userId, 10));
-
-            return new MeetingResponseDTO(
-                meeting,
-                isParticipant,
-                false, 
-                creatorName
+            const isParticipant = meeting.participants.some(
+                (participant) => participant.user_id === parseInt(userId, 10)
             );
+
+            return new MeetingResponseDTO(meeting, isParticipant, false, creatorName);
         });
     }
 
@@ -168,13 +195,13 @@ class MeetingService {
 
         if (meeting.time_idx_deadline !== undefined) {
             const currentTimeIdx = this.getCurrentTimeIdx(); // 현재 시간 인덱스
-            if (currentTimeIdx > meeting.time_idx_deadline) {
+            if (currentTimeIdx >= meeting.time_idx_deadline) {
                 throw new Error('참가 신청이 마감되었습니다.');
             }
         }
 
         const existingParticipant = await MeetingParticipant.findOne({
-            where: { meeting_id: meetingId, user_id: userId }
+            where: { meeting_id: meetingId, user_id: userId },
         });
 
         if (existingParticipant) {
@@ -183,9 +210,6 @@ class MeetingService {
 
         // 트랜잭션을 사용하여 참가자 추가 및 스케줄 업데이트를 원자적으로 처리
         await sequelize.transaction(async (transaction) => {
-            // 참가자 추가
-            await MeetingParticipant.create({ meeting_id: meetingId, user_id: userId }, { transaction });
-
             // 스케줄 충돌 확인
             const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
                 userId,
@@ -197,16 +221,27 @@ class MeetingService {
                 throw new Error('스케줄이 겹칩니다. 다른 모임에 참가하세요.');
             }
 
-            // 스케줄 추가
-            await ScheduleService.createSchedules({
-                userId: userId,
-                title: `번개 모임: ${meeting.title}`,
-                is_fixed: true,
-                events: [
-                    { time_idx: meeting.time_idx_start },
-                    { time_idx: meeting.time_idx_end },
-                ],
-            }, transaction);
+            // 참가자 추가
+            await MeetingParticipant.create(
+                { meeting_id: meetingId, user_id: userId },
+                { transaction }
+            );
+
+            // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
+            const events = [];
+            for (let idx = meeting.time_idx_start; idx <= meeting.time_idx_end; idx++) {
+                events.push({ time_idx: idx });
+            }
+
+            await ScheduleService.createSchedules(
+                {
+                    userId: userId,
+                    title: `번개 모임: ${meeting.title}`,
+                    is_fixed: true,
+                    events: events,
+                },
+                transaction
+            );
 
             // 채팅방 참가 (MongoDB)
             const user = await User.findOne({ where: { id: userId }, transaction });
@@ -217,7 +252,7 @@ class MeetingService {
                 chatRoom.isOnline.set(user.name, true);
                 chatRoom.lastReadAt.set(user.name, new Date());
                 chatRoom.lastReadLogId.set(user.name, null);
-                await chatRoom.save(); 
+                await chatRoom.save();
             }
         });
     }
@@ -233,7 +268,7 @@ class MeetingService {
                 {
                     model: User,
                     as: 'creator',
-                    attributes: ['name']
+                    attributes: ['name'],
                 },
                 {
                     model: MeetingParticipant,
@@ -242,11 +277,11 @@ class MeetingService {
                         {
                             model: User,
                             as: 'participantUser',
-                            attributes: ['name', 'email']
-                        }
-                    ]
-                }
-            ]
+                            attributes: ['name', 'email'],
+                        },
+                    ],
+                },
+            ],
         });
 
         if (!meeting) {

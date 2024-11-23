@@ -3,14 +3,16 @@ const Joi = require('joi');
 
 class CreateMeetingRequestDTO {
     constructor({ title, description, time_idx_start, time_idx_end, location, time_idx_deadline, type, created_by }) {
-        this.title = title;
-        this.description = description;
-        this.time_idx_start = time_idx_start;
-        this.time_idx_end = time_idx_end;
-        this.location = location;
-        this.time_idx_deadline = time_idx_deadline;
-        this.type = type;
-        this.created_by = created_by;
+        this.data = {
+            title,
+            description,
+            time_idx_start,
+            time_idx_end,
+            location,
+            time_idx_deadline,
+            type,
+            created_by,
+        };
     }
 
     validate() {
@@ -22,13 +24,13 @@ class CreateMeetingRequestDTO {
             location: Joi.string().allow('', null).optional(),
             time_idx_deadline: Joi.number().integer().min(0).less(Joi.ref('time_idx_start')).optional(),
             type: Joi.string().valid('OPEN', 'CLOSE').required(),
-            created_by: Joi.number().integer().positive().required()
+            created_by: Joi.number().integer().positive().required(),
         });
 
-        const { error } = schema.validate(this, { abortEarly: false });
+        const { error } = schema.validate(this.data, { abortEarly: false });
 
         if (error) {
-            const errorMessages = error.details.map(detail => detail.message).join(', ');
+            const errorMessages = error.details.map((detail) => detail.message).join(', ');
             throw new Error(`Validation error: ${errorMessages}`);
         }
 
