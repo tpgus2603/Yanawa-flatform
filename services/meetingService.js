@@ -122,40 +122,37 @@ class MeetingService {
      * @returns {Promise<Array<MeetingResponseDTO>>} - 모임 목록 DTO 배열
      */
     async getMeetings(userId) {
-        const meetings = await Meeting.findAll({
-            attributes: [
-                'id',
-                'title',
-                'description',
-                'time_idx_start',
-                'time_idx_end',
-                'location',
-                'time_idx_deadline',
-                'type',
-            ],
-            include: [
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                },
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    attributes: ['user_id'],
-                },
-            ],
-        });
-
-        return meetings.map((meeting) => {
-            const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-            const isParticipant = meeting.participants.some(
-                (participant) => participant.user_id === parseInt(userId, 10)
-            );
-
-            return new MeetingResponseDTO(meeting, isParticipant, false, creatorName);
-        });
-    }
+      const meetings = await Meeting.findAll({
+          attributes: [
+              'id',
+              'title',
+              'description',
+              'time_idx_start',
+              'time_idx_end',
+              'location',
+              'time_idx_deadline',
+              'type',
+          ],
+          include: [
+              {
+                  model: MeetingParticipant,
+                  as: 'participants',
+                  where: { user_id: userId }, // userId와 매핑된 미팅만 가져옴
+                  attributes: [], // MeetingParticipant 테이블의 데이터는 필요 없으므로 제외
+              },
+              {
+                  model: User,
+                  as: 'creator',
+                  attributes: ['name'], // 미팅 생성자의 이름만 필요
+              },
+          ],
+      });
+  
+      return meetings.map((meeting) => {
+          const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
+          return new MeetingResponseDTO(meeting, true, false, creatorName);
+      });
+  }
 
     /**
      * 번개 모임 마감
@@ -262,34 +259,35 @@ class MeetingService {
      * @param {number} meetingId - 모임 ID
      * @returns {Promise<MeetingDetailResponseDTO>} - 모임 상세 DTO
      */
-    async getMeetingDetail(meetingId) {
-        const meeting = await Meeting.findByPk(meetingId, {
-            include: [
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                },
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    include: [
-                        {
-                            model: User,
-                            as: 'participantUser',
-                            attributes: ['name', 'email'],
-                        },
-                    ],
-                },
-            ],
-        });
+    // services/meetingService.js
+  async getMeetingDetail(meetingId) {
+    const meeting = await Meeting.findByPk(meetingId, {
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: ["name"],
+        },
+        {
+          model: MeetingParticipant,
+          as: "participants",
+          include: [
+            {
+              model: User,
+              as: "user", // 'participantUser'에서 'user'로 수정
+              attributes: ["name", "email"],
+            },
+          ],
+        },
+      ],
+    });
 
-        if (!meeting) {
-            throw new Error('모임을 찾을 수 없습니다.');
-        }
-
-        return new MeetingDetailResponseDTO(meeting);
+    if (!meeting) {
+      throw new Error("모임을 찾을 수 없습니다.");
     }
+
+    return new MeetingDetailResponseDTO(meeting);
+  }
 }
 
 module.exports = new MeetingService();

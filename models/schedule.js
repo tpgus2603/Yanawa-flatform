@@ -1,7 +1,7 @@
 // models/Schedule.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const User = require('./User');
+const User = require('./user');
 
 const Schedule = sequelize.define('Schedule', {
   title: {

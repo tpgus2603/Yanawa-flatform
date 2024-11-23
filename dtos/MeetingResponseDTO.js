@@ -1,22 +1,20 @@
 // dtos/MeetingDetailResponseDTO.js
 
-class MeetingDetailResponseDTO {
-  constructor(meeting) {
+
+class MeetingResponseDTO {
+  constructor(meeting, isParticipant, isScheduleConflict, creatorName) {
       this.id = meeting.id;
       this.title = meeting.title;
       this.description = meeting.description;
       this.timeIdxStart = meeting.time_idx_start; 
       this.timeIdxEnd = meeting.time_idx_end;     
       this.location = meeting.location;
-      this.deadline = meeting.deadline;
+      this.time_idx_deadline = meeting.time_idx_deadline;
       this.type = meeting.type;
-      this.creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-      this.participants = meeting.participants.map(participant => ({
-          userId: participant.user_id,
-          name: participant.participantUser ? participant.participantUser.name : 'Unknown',
-          email: participant.participantUser ? participant.participantUser.email : 'Unknown'
-      }));
+      this.creatorName = creatorName;
+      this.isParticipant = isParticipant;
+      this.isScheduleConflict = isScheduleConflict;
   }
 }
 
-module.exports = MeetingDetailResponseDTO;
+module.exports = MeetingResponseDTO;

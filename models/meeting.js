@@ -1,7 +1,7 @@
 // models/Meeting.js
 const { DataTypes } = require('sequelize');
 const sequelize  = require('../config/sequelize');
-const User = require('./User');
+const User = require('./user');
 
 const Meeting = sequelize.define('Meeting', {
   title: {
@@ -22,7 +22,7 @@ const Meeting = sequelize.define('Meeting', {
   location: {
     type: DataTypes.STRING,
   },
-  deadline: {
+  time_idx_deadline: {
     type: DataTypes.INTEGER,
   },
   type: {
@@ -33,12 +33,5 @@ const Meeting = sequelize.define('Meeting', {
   tableName: 'Meetings',
   timestamps: false,
 });
-
-// // 연관 관계 설정
-// Meeting.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
-// User.hasMany(Meeting, { foreignKey: 'created_by', as: 'meetings' });
-
-// Meeting.belongsTo(ChatRoom, { foreignKey: 'chatRoomId', as: 'chatRoom' });
-// ChatRoom.hasOne(Meeting, { foreignKey: 'chatRoomId', as: 'meeting' });
 
 module.exports = Meeting;

@@ -1,12 +1,12 @@
 // models/index.js
 
 const sequelize = require('../config/sequelize');
-const User = require('./User');
+const User = require('./user');
 const Friend = require('./Friend');
 const Schedule = require('./Schedule');
 const Meeting = require('./Meeting');
 const MeetingParticipant = require('./MeetingParticipant');
-const ChatRoom = require('./ChatRooms');
+const ChatRooms = require('./ChatRooms');
 
 // 관계 설정
 Friend.belongsTo(User, { foreignKey: 'requester_id', as: 'requester' }); // 친구 요청을 보낸 사용자
@@ -34,5 +34,5 @@ module.exports = {
     Schedule,
     Meeting,
     MeetingParticipant,
-    ChatRoom,
+    ChatRooms,
 };
