@@ -182,6 +182,7 @@ class MeetingService {
      */
     async joinMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
+        console.log(`참여하려는 모임: ${JSON.stringify(meeting)}`);
         if (!meeting) {
             throw new Error('모임을 찾을 수 없습니다.');
         }
@@ -214,6 +215,7 @@ class MeetingService {
                 meeting.time_idx_end,
                 transaction
             );
+            console.log(`스케줄 충돌 결과: ${hasConflict}`);
             if (hasConflict) {
                 throw new Error('스케줄이 겹칩니다. 다른 모임에 참가하세요.');
             }

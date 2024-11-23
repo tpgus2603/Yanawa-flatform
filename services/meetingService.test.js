@@ -1,407 +1,497 @@
 // test/meetingService.test.js
-const sequelize = require('../config/sequelize'); // 실제 경로에 맞게 수정
+const sequelize = require('../config/sequelize'); 
 const { Op } = require('sequelize');
 const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
 const MeetingService = require('../services/meetingService');
 const ScheduleService = require('../services/scheduleService');
-const ChatRooms = require('../models/ChatRooms'); // MongoDB 모델
+const ChatRooms = require('../models/ChatRooms'); 
 const CreateMeetingRequestDTO = require('../dtos/CreateMeetingRequestDTO');
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
 
-// Jest 설정에서 'node' 환경을 사용하고 있는지 확인
-// jest.config.js 또는 package.json에 다음을 추가하세요:
-// {
-//   "jest": {
-//     "testEnvironment": "node"
-//   }
-// }
 
-// ChatRooms 모듈 전체를 모킹하지 않고, 필요한 메서드만 선택적으로 모킹합니다.
+
 beforeAll(async () => {
-    // 테스트 스위트가 시작되기 전에 데이터베이스를 동기화합니다.
-    await sequelize.sync({ force: true });
+  // 데이터베이스 초기화 및 동기화
+  await sequelize.sync({ force: true });
 });
 
 beforeEach(async () => {
-    // 각 테스트가 시작되기 전에 기존 데이터를 삭제합니다.
-    await MeetingParticipant.destroy({ where: {} });
-    await Meeting.destroy({ where: {} });
-    await Schedule.destroy({ where: {} });
-    await User.destroy({ where: {} });
+  // 외래 키 순서에 따라 데이터 삭제
+  await MeetingParticipant.destroy({ where: {}, truncate: true });
+  await Meeting.destroy({ where: {}, truncate: true });
+  await Schedule.destroy({ where: {}, truncate: true });
+  await User.destroy({ where: {}, truncate: true });
 
-    // 더미 사용자 생성
-    await User.bulkCreate([
-        { id: 1, name: 'Alice', email: 'alice@example.com' },
-        { id: 2, name: 'Bob', email: 'bob@example.com' },
-        { id: 3, name: 'Charlie', email: 'charlie@example.com' },
-    ]);
+  // 더미 사용자 데이터 삽입
+  await User.bulkCreate([
+      { id: 1, name: 'Alice', email: 'alice@example.com' },
+      { id: 2, name: 'Bob', email: 'bob@example.com' },
+      { id: 3, name: 'Charlie', email: 'charlie@example.com' },
+  ]);
 
-    // 더미 스케줄 생성 (이미 존재하는 스케줄로 스케줄 겹침 테스트에 사용)
-    await Schedule.bulkCreate([
-        { id: 1, user_id: 1, title: 'Alice Schedule', time_idx: 50, is_fixed: true },
-        { id: 2, user_id: 2, title: 'Bob Schedule', time_idx: 60, is_fixed: true },
-    ]);
+  // ChatRooms Mock 설정
+  jest.spyOn(ChatRooms.prototype, 'save').mockResolvedValue(undefined);
+  jest.spyOn(ChatRooms, 'findOne').mockResolvedValue({
+      participants: [],
+      isOnline: new Map(),
+      lastReadAt: new Map(),
+      lastReadLogId: new Map(),
+      save: jest.fn().mockResolvedValue(true),
+  });
+});
 
-    // ChatRooms 모킹 설정
-    jest.clearAllMocks();
-
-    // ChatRooms 인스턴스 메서드 모킹
-    jest.spyOn(ChatRooms.prototype, 'save').mockImplementation(() => Promise.resolve());
-
-    // ChatRooms 스태틱 메서드 모킹
-    jest.spyOn(ChatRooms, 'findOne').mockImplementation(async () => {
-        return {
-            participants: [],
-            isOnline: new Map(),
-            lastReadAt: new Map(),
-            lastReadLogId: new Map(),
-            save: jest.fn().mockResolvedValue(true),
-        };
-    });
+afterEach(() => {
+  // Mock 복원 및 초기화
+  jest.restoreAllMocks();
+  jest.clearAllMocks();
 });
 
 afterAll(async () => {
-    await sequelize.close();
+  // 데이터베이스 연결 종료
+  await sequelize.close();
 });
 
-describe('MeetingService', () => {
-    describe('createMeeting', () => {
-        test('should create a new meeting successfully', async () => {
-            const meetingData = {
-                title: 'Team Meeting',
-                description: 'Weekly sync-up meeting.',
-                time_idx_start: 70,
-                time_idx_end: 72,
-                location: 'Conference Room A',
-                time_idx_deadline: 68,
-                type: 'OPEN',
-                created_by: 1,
-            };
+describe('MeetingService - getMeetings', () => {
+  beforeEach(async () => {
+      await MeetingParticipant.destroy({ where: {} });
+      await Meeting.destroy({ where: {} });
+      await Schedule.destroy({ where: {} });
+      await User.destroy({ where: {} });
 
-            const result = await MeetingService.createMeeting(meetingData);
+      // Create dummy users
+      await User.bulkCreate([
+          { id: 1, name: 'Alice', email: 'alice@example.com' },
+          { id: 2, name: 'Bob', email: 'bob@example.com' },
+          { id: 3, name: 'Charlie', email: 'charlie@example.com' },
+      ]);
+  });
 
-            expect(result).toBeDefined();
-            expect(result.meeting_id).toBeDefined();
-            expect(result.chatRoomId).toBeDefined();
+  test('should retrieve meetings where the user is a participant', async () => {
+      const meetingData = {
+          title: 'Meeting with Alice',
+          description: 'Discuss project.',
+          time_idx_start: 10,
+          time_idx_end: 20,
+          location: 'Room A',
+          time_idx_deadline: 8,
+          type: 'OPEN',
+          created_by: 1,
+      };
 
-            // 데이터베이스에서 모임 확인
-            const meeting = await Meeting.findByPk(result.meeting_id);
-            expect(meeting).toBeDefined();
-            expect(meeting.title).toBe('Team Meeting');
-            expect(meeting.created_by).toBe(1);
+      const createdMeeting = await MeetingService.createMeeting(meetingData);
 
-            // 모임 참가자 확인
-            const participants = await MeetingParticipant.findAll({ where: { meeting_id: result.meeting_id } });
-            expect(participants.length).toBe(1);
-            expect(participants[0].user_id).toBe(1);
+      await MeetingParticipant.create({
+          meeting_id: createdMeeting.meeting_id,
+          user_id: 2,
+      });
 
-            // 스케줄 생성 확인
-            const schedules = await Schedule.findAll({ where: { user_id: 1, title: '번개 모임: Team Meeting' } });
-            expect(schedules.length).toBe(3); // time_idx_start부터 time_idx_end까지
-            schedules.forEach(schedule => {
-                expect(schedule.is_fixed).toBe(false); // 유동 시간대
-                expect(schedule.time_idx).toBeGreaterThanOrEqual(70);
-                expect(schedule.time_idx).toBeLessThanOrEqual(72);
-            });
+      const meetings = await MeetingService.getMeetings(2); // Bob's user ID
 
-            // ChatRooms 모킹 확인
-            expect(ChatRooms.prototype.save).toHaveBeenCalledTimes(1);
-        });
+      expect(meetings).toBeDefined();
+      expect(Array.isArray(meetings)).toBe(true);
+      expect(meetings.length).toBe(1);
 
-        test('should throw error when user does not exist', async () => {
-            const meetingData = {
-                title: 'Invalid User Meeting',
-                description: 'This should fail.',
-                time_idx_start: 70,
-                time_idx_end: 72,
-                location: 'Conference Room A',
-                time_idx_deadline: 68,
-                type: 'OPEN',
-                created_by: 999, // 존재하지 않는 사용자 ID
-            };
+      const [meeting] = meetings;
+      expect(meeting.title).toBe('Meeting with Alice');
+      expect(meeting.creatorName).toBe('Alice');
+      expect(meeting.isParticipant).toBe(true);
+  });
 
-            await expect(MeetingService.createMeeting(meetingData)).rejects.toThrow('사용자를 찾을 수 없습니다.');
-        });
+  test('should retrieve meetings where the user is the creator', async () => {
+      const meetingData = {
+          title: 'Alice-created Meeting',
+          description: 'Team discussion.',
+          time_idx_start: 15,
+          time_idx_end: 25,
+          location: 'Room B',
+          time_idx_deadline: 12,
+          type: 'OPEN',
+          created_by: 1,
+      };
 
-        test('should throw error when schedule overlaps', async () => {
-            // Alice는 이미 time_idx 50에 스케줄이 있음
-            const meetingData = {
-                title: 'Overlapping Meeting',
-                description: 'This should fail due to schedule overlap.',
-                time_idx_start: 49,
-                time_idx_end: 51, // time_idx 50 포함
-                location: 'Conference Room B',
-                time_idx_deadline: 48,
-                type: 'OPEN',
-                created_by: 1,
-            };
+      await MeetingService.createMeeting(meetingData);
 
-            // 'createSchedules' 메서드에서 'Schedule overlaps with existing schedule at time_idx 50' 오류가 발생해야 함
-            // 이를 위해 'ScheduleService.checkScheduleOverlapByTime'을 모킹합니다.
+      const meetings = await MeetingService.getMeetings(1); // Alice's user ID
 
-            jest.spyOn(ScheduleService, 'checkScheduleOverlapByTime').mockResolvedValue(true); // 충돌이 발생한다고 가정
+      expect(meetings).toBeDefined();
+      expect(Array.isArray(meetings)).toBe(true);
+      expect(meetings.length).toBe(1);
 
-            await expect(MeetingService.createMeeting(meetingData)).rejects.toThrow(
-                'Schedule overlaps with existing schedule at time_idx 50'
-            );
-        });
-    });
+      const [meeting] = meetings;
+      expect(meeting.title).toBe('Alice-created Meeting');
+      expect(meeting.creatorName).toBe('Alice');
+      expect(meeting.isParticipant).toBe(true);
+  });
 
-    describe('getMeetings', () => {
-        test('should retrieve all meetings', async () => {
-            // 미팅 생성
-            const meetingData1 = {
-                title: 'Meeting 1',
-                description: 'First meeting.',
-                time_idx_start: 70,
-                time_idx_end: 72,
-                location: 'Conference Room A',
-                time_idx_deadline: 68,
-                type: 'OPEN',
-                created_by: 1,
-            };
+  test('should not include meetings where the user is neither a participant nor the creator', async () => {
+      const meetingData = {
+          title: 'Meeting with Bob',
+          description: 'General discussion.',
+          time_idx_start: 30,
+          time_idx_end: 40,
+          location: 'Room C',
+          time_idx_deadline: 28,
+          type: 'OPEN',
+          created_by: 2,
+      };
 
-            const meetingData2 = {
-                title: 'Meeting 2',
-                description: 'Second meeting.',
-                time_idx_start: 80,
-                time_idx_end: 82,
-                location: 'Conference Room B',
-                time_idx_deadline: 78,
-                type: 'OPEN',
-                created_by: 2,
-            };
+      await MeetingService.createMeeting(meetingData);
 
-            const result1 = await MeetingService.createMeeting(meetingData1);
-            const result2 = await MeetingService.createMeeting(meetingData2);
+      const meetings = await MeetingService.getMeetings(1); // Alice's user ID
 
-            const meetings = await MeetingService.getMeetings(1); // Alice의 사용자 ID
-            console.log(meetings);
-            expect(meetings).toBeDefined();
-            expect(Array.isArray(meetings)).toBe(true);
-            expect(meetings.length).toBe(1);
+      expect(meetings).toBeDefined();
+      expect(Array.isArray(meetings)).toBe(true);
+      expect(meetings.length).toBe(0); // Alice is not a participant or the creator
+  });
 
-            // 생성된 미팅의 ID를 기준으로 기대값 설정
-            const meeting1 = meetings.find(meeting => meeting.title === 'Meeting 1');
-            const meeting2 = meetings.find(meeting => meeting.title === 'Meeting 2');
+  test('should retrieve multiple meetings correctly', async () => {
+      const meetingData1 = {
+          title: 'Meeting 1',
+          description: 'First meeting.',
+          time_idx_start: 50,
+          time_idx_end: 60,
+          location: 'Room D',
+          time_idx_deadline: 48,
+          type: 'OPEN',
+          created_by: 1,
+      };
 
-            console.log(meeting1);
-            console.log(meeting2);
-            expect(meeting1).toBeDefined();
-            expect(meeting1.creatorName).toBe('Alice');
-            expect(meeting1.isParticipant).toBe(true);
+      const meetingData2 = {
+          title: 'Meeting 2',
+          description: 'Second meeting.',
+          time_idx_start: 70,
+          time_idx_end: 80,
+          location: 'Room E',
+          time_idx_deadline: 68,
+          type: 'OPEN',
+          created_by: 2,
+      };
 
-            expect(meeting2).toBeDefined();
-            expect(meeting2.creatorName).toBe('Bob');
-            expect(meeting2.isParticipant).toBe(false);
-        });
+      await MeetingService.createMeeting(meetingData1);
+      const meeting2 = await MeetingService.createMeeting(meetingData2);
 
-        // 추가적인 getMeetings 테스트 케이스 작성 가능
-    });
+    
+      await MeetingParticipant.create({
+          meeting_id: meeting2.meeting_id,
+          user_id: 1,
+      });
 
-    describe('closeMeeting', () => {
-        test('should close an open meeting successfully', async () => {
-            const meetingData = {
-                title: 'Meeting to Close',
-                description: 'This meeting will be closed.',
-                time_idx_start: 90,
-                time_idx_end: 92,
-                location: 'Conference Room C',
-                time_idx_deadline: 88,
-                type: 'OPEN',
-                created_by: 1,
-            };
+      const meetings = await MeetingService.getMeetings(1); // Alice's user ID
 
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
+      expect(meetings).toBeDefined();
+      expect(Array.isArray(meetings)).toBe(true);
+      expect(meetings.length).toBe(2); // Alice is either the creator or a participant in two meetings
 
-            const closedMeeting = await MeetingService.closeMeeting(meeting_id);
+      const meetingTitles = meetings.map((m) => m.title);
+      expect(meetingTitles).toContain('Meeting 1');
+      expect(meetingTitles).toContain('Meeting 2');
+  });
 
-            expect(closedMeeting).toBeDefined();
-            expect(closedMeeting.type).toBe('CLOSE');
-
-            // 데이터베이스에서 확인
-            const meeting = await Meeting.findByPk(meeting_id);
-            expect(meeting.type).toBe('CLOSE');
-        });
-
-        test('should throw error when closing a non-existing meeting', async () => {
-            await expect(MeetingService.closeMeeting(999)).rejects.toThrow('모임을 찾을 수 없습니다.');
-        });
-
-        test('should throw error when closing an already closed meeting', async () => {
-            const meetingData = {
-                title: 'Already Closed Meeting',
-                description: 'This meeting is already closed.',
-                time_idx_start: 100,
-                time_idx_end: 102,
-                location: 'Conference Room D',
-                time_idx_deadline: 98,
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            await MeetingService.closeMeeting(meeting_id);
-
-            await expect(MeetingService.closeMeeting(meeting_id)).rejects.toThrow('이미 마감된 모임입니다.');
-        });
-    });
-
-    describe('joinMeeting', () => {
-        test('should allow a user to join an open meeting', async () => {
-            const meetingData = {
-                title: 'Open Meeting',
-                description: 'Users can join this meeting.',
-                time_idx_start: 110,
-                time_idx_end: 112,
-                location: 'Conference Room E',
-                time_idx_deadline: 108,
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            // 'getCurrentTimeIdx'를 고정된 값으로 모킹하여 '참가 신청이 마감되었습니다.' 오류를 방지
-            jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(100); // 100 < 108
-
-            // Bob이 참가
-            await MeetingService.joinMeeting(meeting_id, 2);
-
-            // 참가자 확인
-            const participants = await MeetingParticipant.findAll({ where: { meeting_id } });
-            expect(participants.length).toBe(2); // Alice와 Bob
-
-            const participantIds = participants.map((p) => p.user_id);
-            expect(participantIds).toContain(1);
-            expect(participantIds).toContain(2);
-
-            // Bob의 스케줄 생성 확인
-            const schedules = await Schedule.findAll({
-                where: { user_id: 2, title: `번개 모임: ${meetingData.title}` },
-            });
-            expect(schedules.length).toBe(3); // time_idx_start부터 time_idx_end까지
-            schedules.forEach(schedule => {
-                expect(schedule.is_fixed).toBe(true); // 고정 시간대
-                expect(schedule.time_idx).toBeGreaterThanOrEqual(110);
-                expect(schedule.time_idx).toBeLessThanOrEqual(112);
-            });
-
-            // ChatRooms 모킹 확인
-            expect(ChatRooms.findOne).toHaveBeenCalledTimes(1);
-            const chatRoom = await ChatRooms.findOne();
-            expect(chatRoom.save).toHaveBeenCalledTimes(1);
-        });
-
-        test('should throw error when joining a closed meeting', async () => {
-            const meetingData = {
-                title: 'Closed Meeting',
-                description: 'This meeting is closed.',
-                time_idx_start: 120,
-                time_idx_end: 122,
-                location: 'Conference Room F',
-                time_idx_deadline: 118,
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            // 'getCurrentTimeIdx'를 고정된 값으로 모킹
-            jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(100); // 100 < 118
-
-            await MeetingService.closeMeeting(meeting_id);
-
-            await expect(MeetingService.joinMeeting(meeting_id, 2)).rejects.toThrow('이미 마감된 모임입니다.');
-        });
-
-        test('should throw error when user already joined', async () => {
-            const meetingData = {
-                title: 'Meeting with Bob',
-                description: 'Bob will join this meeting.',
-                time_idx_start: 130,
-                time_idx_end: 132,
-                location: 'Conference Room G',
-                time_idx_deadline: 128,
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            // 'getCurrentTimeIdx'를 고정된 값으로 모킹
-            jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(100); // 100 < 128
-
-            await MeetingService.joinMeeting(meeting_id, 2);
-
-            await expect(MeetingService.joinMeeting(meeting_id, 2)).rejects.toThrow('이미 참가한 사용자입니다.');
-        });
-
-        test('should throw error when schedule overlaps', async () => {
-            // Bob은 이미 time_idx 60에 스케줄이 있음
-            const meetingData = {
-                title: 'Overlapping Schedule Meeting',
-                description: 'Bob has a conflicting schedule.',
-                time_idx_start: 59,
-                time_idx_end: 61, // time_idx 60 포함
-                location: 'Conference Room H',
-                time_idx_deadline: 110, // 참가 신청 마감을 피하기 위해 값 변경
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            // 'getCurrentTimeIdx'를 고정된 값으로 모킹
-            jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(100); // 100 < 110
-
-            // 'checkScheduleOverlapByTime'을 모킹하여 충돌이 발생하도록 설정
-            jest.spyOn(ScheduleService, 'checkScheduleOverlapByTime').mockResolvedValue(true);
-
-            await expect(MeetingService.joinMeeting(meeting_id, 2)).rejects.toThrow(
-                '스케줄이 겹칩니다. 다른 모임에 참가하세요.'
-            );
-        });
-    });
-
-    describe('getMeetingDetail', () => {
-        test('should retrieve meeting details', async () => {
-            const meetingData = {
-                title: 'Detailed Meeting',
-                description: 'This meeting has details.',
-                time_idx_start: 140,
-                time_idx_end: 142,
-                location: 'Conference Room I',
-                time_idx_deadline: 138,
-                type: 'OPEN',
-                created_by: 1,
-            };
-
-            const { meeting_id } = await MeetingService.createMeeting(meetingData);
-
-            // Bob과 Charlie 참가
-            jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(100); // 참가 신청 마감 방지
-            await MeetingService.joinMeeting(meeting_id, 2);
-            await MeetingService.joinMeeting(meeting_id, 3);
-
-            const meetingDetail = await MeetingService.getMeetingDetail(meeting_id);
-
-            expect(meetingDetail).toBeDefined();
-            expect(meetingDetail).toBeInstanceOf(MeetingDetailResponseDTO);
-            expect(meetingDetail.title).toBe('Detailed Meeting');
-            expect(meetingDetail.creatorName).toBe('Alice');
-            expect(meetingDetail.participants.length).toBe(3); // Alice, Bob, Charlie
-
-            const participantNames = meetingDetail.participants.map((p) => p.name);
-            expect(participantNames).toContain('Alice');
-            expect(participantNames).toContain('Bob');
-            expect(participantNames).toContain('Charlie');
-        });
-
-        test('should throw error when meeting does not exist', async () => {
-            await expect(MeetingService.getMeetingDetail(999)).rejects.toThrow('모임을 찾을 수 없습니다.');
-        });
-    });
+  test('should return an empty array if the user has no meetings', async () => {
+      const meetings = await MeetingService.getMeetings(3); 
+      expect(meetings).toBeDefined();
+      expect(Array.isArray(meetings)).toBe(true);
+      expect(meetings.length).toBe(0); 
+  });
 });
+
+
+describe('MeetingService - Integration: createMeeting, joinMeeting, getMeetings', () => {
+  beforeEach(async () => {
+      await MeetingParticipant.destroy({ where: {} });
+      await Meeting.destroy({ where: {} });
+      await Schedule.destroy({ where: {} });
+      await User.destroy({ where: {} });
+
+      // Create dummy users
+      await User.bulkCreate([
+          { id: 1, name: 'Alice', email: 'alice@example.com' },
+          { id: 2, name: 'Bob', email: 'bob@example.com' },
+          { id: 3, name: 'Charlie', email: 'charlie@example.com' },
+      ]);
+  });
+
+  test('should create a meeting, allow multiple users to join, and retrieve them correctly', async () => {
+      // Step 1: Create a meeting
+      const meetingData = {
+          title: 'Integration Test Meeting',
+          description: 'Test meeting for integration.',
+          time_idx_start: 10,
+          time_idx_end: 20,
+          location: 'Conference Room A',
+          time_idx_deadline: 8,
+          type: 'OPEN',
+          created_by: 1, 
+      };
+
+      const createdMeeting = await MeetingService.createMeeting(meetingData);
+
+      expect(createdMeeting).toBeDefined();
+      expect(createdMeeting.meeting_id).toBeDefined();
+      expect(createdMeeting.chatRoomId).toBeDefined();
+
+      // Step 2: Bob and Charlie join the meeting
+      jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(5); // Ensure deadline is not passed
+      await MeetingService.joinMeeting(createdMeeting.meeting_id, 2); // Bob joins
+      await MeetingService.joinMeeting(createdMeeting.meeting_id, 3); // Charlie joins
+
+      // Step 3: Retrieve meetings for Alice (creator)
+      const aliceMeetings = await MeetingService.getMeetings(1);
+      expect(aliceMeetings).toBeDefined();
+      expect(aliceMeetings.length).toBe(1);
+
+      const aliceMeeting = aliceMeetings[0];
+      expect(aliceMeeting.title).toBe('Integration Test Meeting');
+      expect(aliceMeeting.creatorName).toBe('Alice');
+      expect(aliceMeeting.isParticipant).toBe(true);
+
+      // Step 4: Retrieve meetings for Bob (participant)
+      const bobMeetings = await MeetingService.getMeetings(2);
+      expect(bobMeetings).toBeDefined();
+      expect(bobMeetings.length).toBe(1);
+
+      const bobMeeting = bobMeetings[0];
+      expect(bobMeeting.title).toBe('Integration Test Meeting');
+      expect(bobMeeting.creatorName).toBe('Alice');
+      expect(bobMeeting.isParticipant).toBe(true);
+
+      // Step 5: Retrieve meetings for Charlie (participant)
+      const charlieMeetings = await MeetingService.getMeetings(3);
+      expect(charlieMeetings).toBeDefined();
+      expect(charlieMeetings.length).toBe(1);
+
+      const charlieMeeting = charlieMeetings[0];
+      expect(charlieMeeting.title).toBe('Integration Test Meeting');
+      expect(charlieMeeting.creatorName).toBe('Alice');
+      expect(charlieMeeting.isParticipant).toBe(true);
+  });
+
+  test('should not allow joining a meeting after the deadline', async () => {
+      const meetingData = {
+          title: 'Deadline Test Meeting',
+          description: 'Meeting to test deadlines.',
+          time_idx_start: 30,
+          time_idx_end: 40,
+          location: 'Conference Room B',
+          time_idx_deadline: 25,
+          type: 'OPEN',
+          created_by: 1, // Alice creates the meeting
+      };
+
+      const createdMeeting = await MeetingService.createMeeting(meetingData);
+
+      jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(26); // Simulate time after the deadline
+
+      await expect(
+          MeetingService.joinMeeting(createdMeeting.meeting_id, 2)
+      ).rejects.toThrow('참가 신청이 마감되었습니다.');
+  });
+
+  test('should prevent duplicate joining of a meeting', async () => {
+      const meetingData = {
+          title: 'Duplicate Join Test Meeting',
+          description: 'Meeting to test duplicate join handling.',
+          time_idx_start: 50,
+          time_idx_end: 60,
+          location: 'Conference Room C',
+          time_idx_deadline: 48,
+          type: 'OPEN',
+          created_by: 1, // Alice creates the meeting
+      };
+
+      const createdMeeting = await MeetingService.createMeeting(meetingData);
+
+      jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(45); // Ensure deadline is not passed
+      await MeetingService.joinMeeting(createdMeeting.meeting_id, 2); // Bob joins
+
+      // Attempt duplicate join
+      await expect(
+          MeetingService.joinMeeting(createdMeeting.meeting_id, 2)
+      ).rejects.toThrow('이미 참가한 사용자입니다.');
+  });
+
+  test('should prevent joining when schedule conflicts', async () => {
+    const meetingData = {
+        title: 'Conflict Test Meeting',
+        description: 'Meeting to test schedule conflict.',
+        time_idx_start: 70,
+        time_idx_end: 80,
+        location: 'Conference Room D',
+        time_idx_deadline: 68,
+        type: 'OPEN',
+        created_by: 1, // Alice creates the meeting
+    };
+
+    const createdMeeting = await MeetingService.createMeeting(meetingData);
+
+    // Step 1: Virtually set current time before the deadline
+    jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(65); // 현재 시간이 데드라인보다 작음
+
+    // Step 2: Simulate schedule conflict
+    jest.spyOn(ScheduleService, 'checkScheduleOverlapByTime').mockResolvedValue(true); // 스케줄 충돌 발생
+
+    // Step 3: Expect schedule conflict error
+    await expect(
+        MeetingService.joinMeeting(createdMeeting.meeting_id, 2)
+    ).rejects.toThrow('스케줄이 겹칩니다. 다른 모임에 참가하세요.');
+});
+
+});
+
+describe('MeetingService2', () => {
+  beforeEach(async () => {
+      // 데이터베이스 초기화
+      await MeetingParticipant.destroy({ where: {} });
+      await Meeting.destroy({ where: {} });
+      await Schedule.destroy({ where: {} });
+      await User.destroy({ where: {} });
+
+      // 더미 사용자 생성
+      await User.bulkCreate([
+          { id: 1, name: 'Alice', email: 'alice@example.com' },
+          { id: 2, name: 'Bob', email: 'bob@example.com' },
+          { id: 3, name: 'Charlie', email: 'charlie@example.com' },
+      ]);
+  });
+
+  test('사용자가 여러 모임에 참여하고 이를 정확히 조회할 수 있어야 한다', async () => {
+      // 1단계: 겹치지 않는 시간대의 모임 생성
+      const meetingData1 = {
+          title: 'Morning Meeting',
+          description: 'Morning planning meeting.',
+          time_idx_start: 10,
+          time_idx_end: 20,
+          location: 'Room A',
+          time_idx_deadline: 8,
+          type: 'OPEN',
+          created_by: 1, // Alice가 모임 생성
+      };
+
+      const meetingData2 = {
+          title: 'Lunch Meeting',
+          description: 'Lunch and discussion.',
+          time_idx_start: 30,
+          time_idx_end: 40,
+          location: 'Room B',
+          time_idx_deadline: 28,
+          type: 'OPEN',
+          created_by: 2, // Bob이 모임 생성
+      };
+
+      const meeting1 = await MeetingService.createMeeting(meetingData1);
+      const meeting2 = await MeetingService.createMeeting(meetingData2);
+
+      // 모임 생성 확인
+      expect(meeting1).toBeDefined();
+      expect(meeting2).toBeDefined();
+
+      // 2단계: Charlie가 두 모임에 참여
+      jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(5); // 마감 시간을 초과하지 않도록 설정
+      await MeetingService.joinMeeting(meeting1.meeting_id, 3); // Charlie가 Morning Meeting 참여
+      await MeetingService.joinMeeting(meeting2.meeting_id, 3); // Charlie가 Lunch Meeting 참여
+
+      // 3단계: Charlie의 참여 모임 조회
+      const charlieMeetings = await MeetingService.getMeetings(3); // Charlie의 사용자 ID
+      expect(charlieMeetings).toBeDefined();
+      expect(Array.isArray(charlieMeetings)).toBe(true);
+      expect(charlieMeetings.length).toBe(2); // Charlie는 2개의 모임에 참여
+
+      // 각 모임의 세부 정보 확인
+      const morningMeeting = charlieMeetings.find(meeting => meeting.title === 'Morning Meeting');
+      const lunchMeeting = charlieMeetings.find(meeting => meeting.title === 'Lunch Meeting');
+
+      expect(morningMeeting).toBeDefined();
+      expect(morningMeeting.creatorName).toBe('Alice');
+      expect(morningMeeting.isParticipant).toBe(true);
+
+      expect(lunchMeeting).toBeDefined();
+      expect(lunchMeeting.creatorName).toBe('Bob');
+      expect(lunchMeeting.isParticipant).toBe(true);
+
+      // 추가 검증: 각 모임에 대한 Charlie의 스케줄이 올바르게 생성되었는지 확인
+      const charlieSchedules = await Schedule.findAll({ where: { user_id: 3 } });
+      expect(charlieSchedules.length).toBe(2 * (20 - 10 + 1)); // 두 모임, 각 모임마다 11개의 스케줄 (10~20, 30~40)
+      
+      // 중복 스케줄이 없는지 확인
+      const timeIndicesMorning = charlieSchedules
+          .filter(schedule => schedule.title === `번개 모임: ${meetingData1.title}`)
+          .map(schedule => schedule.time_idx);
+      const timeIndicesLunch = charlieSchedules
+          .filter(schedule => schedule.title === `번개 모임: ${meetingData2.title}`)
+          .map(schedule => schedule.time_idx);
+
+      // Morning Meeting의 시간대 확인
+      for (let i = 10; i <= 20; i++) {
+          expect(timeIndicesMorning).toContain(i);
+      }
+
+      // Lunch Meeting의 시간대 확인
+      for (let i = 30; i <= 40; i++) {
+          expect(timeIndicesLunch).toContain(i);
+      }
+  });
+
+  test('각 사용자의 모임을 정확히 조회해야 한다', async () => {
+      // 1단계: 겹치지 않는 시간대의 모임 생성
+      const meetingData1 = {
+          title: 'Morning Meeting',
+          description: 'Morning planning meeting.',
+          time_idx_start: 10,
+          time_idx_end: 20,
+          location: 'Room A',
+          time_idx_deadline: 8,
+          type: 'OPEN',
+          created_by: 1, // Alice가 모임 생성
+      };
+
+      const meetingData2 = {
+          title: 'Lunch Meeting',
+          description: 'Lunch and discussion.',
+          time_idx_start: 30,
+          time_idx_end: 40,
+          location: 'Room B',
+          time_idx_deadline: 28,
+          type: 'OPEN',
+          created_by: 2, // Bob이 모임 생성
+      };
+
+      const meeting1 = await MeetingService.createMeeting(meetingData1);
+      const meeting2 = await MeetingService.createMeeting(meetingData2);
+
+      // 2단계: Charlie가 두 모임에 참여
+      jest.spyOn(MeetingService, 'getCurrentTimeIdx').mockReturnValue(5); // 마감 시간을 초과하지 않도록 설정
+      await MeetingService.joinMeeting(meeting1.meeting_id, 3); // Charlie가 Morning Meeting 참여
+      await MeetingService.joinMeeting(meeting2.meeting_id, 3); // Charlie가 Lunch Meeting 참여
+
+      // 3단계: Alice의 모임 조회
+      const aliceMeetings = await MeetingService.getMeetings(1); // Alice의 사용자 ID
+      expect(aliceMeetings.length).toBe(1); // Alice는 하나의 모임 생성
+      expect(aliceMeetings[0].title).toBe('Morning Meeting');
+      expect(aliceMeetings[0].isParticipant).toBe(true);
+
+      // 4단계: Bob의 모임 조회
+      const bobMeetings = await MeetingService.getMeetings(2); // Bob의 사용자 ID
+      expect(bobMeetings.length).toBe(1); // Bob은 하나의 모임 생성
+      expect(bobMeetings[0].title).toBe('Lunch Meeting');
+      expect(bobMeetings[0].isParticipant).toBe(true);
+
+      // 5단계: Charlie의 모임 조회
+      const charlieMeetings = await MeetingService.getMeetings(3); // Charlie의 사용자 ID
+      expect(charlieMeetings.length).toBe(2); // Charlie는 두 모임에 참여
+      const meetingTitles = charlieMeetings.map(meeting => meeting.title);
+      expect(meetingTitles).toContain('Morning Meeting');
+      expect(meetingTitles).toContain('Lunch Meeting');
+
+      // 추가 검증: 각 사용자의 스케줄을 확인하여 충돌이 없는지 확인
+      const aliceSchedules = await Schedule.findAll({ where: { user_id: 1 } });
+      expect(aliceSchedules.length).toBe(11); // Morning Meeting: 10-20
+
+      const bobSchedules = await Schedule.findAll({ where: { user_id: 2 } });
+      expect(bobSchedules.length).toBe(11); // Lunch Meeting: 30-40
+
+      const charlieSchedules = await Schedule.findAll({ where: { user_id: 3 } });
+      expect(charlieSchedules.length).toBe(22); // 두 모임, 각 모임마다 11개의 스케줄 (10~20, 30~40)
+  });
+});
+

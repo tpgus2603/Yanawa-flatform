@@ -133,6 +133,9 @@ class ScheduleService {
     }
 
     async checkScheduleOverlapByTime(userId, time_idx_start, time_idx_end, transaction = null) {
+        console.log(
+            `checkScheduleOverlapByTime 호출: userId=${userId}, time_idx_start=${time_idx_start}, time_idx_end=${time_idx_end}`
+        );
         const overlappingSchedule = await Schedule.findOne({
             where: {
                 user_id: userId,
@@ -142,8 +145,10 @@ class ScheduleService {
             },
             transaction,
         });
-    
-        return !!overlappingSchedule;
+         console.log(`중복 스케줄: ${JSON.stringify(overlappingSchedule)}`);
+    const result = !!overlappingSchedule;
+    console.log(`스케줄 충돌 결과: ${result}`);
+    return result;
     }
     
 
