@@ -26,11 +26,6 @@ class MeetingService {
         return totalIdx;
     }
 
-    /**
-     * 번개 모임 생성
-     * @param {object} meetingData - 모임 생성 데이터
-     * @returns {Promise<object>} - 생성된 모임 ID와 채팅방 ID, 초대된 친구 ID 목록
-     */
     async createMeeting(meetingData) {
         // DTO를 사용하여 요청 데이터 검증
         const createMeetingDTO = new CreateMeetingRequestDTO(meetingData);
@@ -179,12 +174,7 @@ class MeetingService {
         return availableFriendIds;
     }
 
-    /**
-     * 번개 모임 참가
-     * @param {number} meetingId - 모임 ID
-     * @param {number} userId - 사용자 ID
-     * @returns {Promise<void>}
-     */
+  
     async joinMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
         console.log(`참여하려는 모임: ${JSON.stringify(meeting)}`);
@@ -209,7 +199,6 @@ class MeetingService {
 
         // 트랜잭션을 사용하여 참가자 추가 및 스케줄 업데이트를 원자적으로 처리
         await sequelize.transaction(async (transaction) => {
-          // 현재 인원 수 확인
           if (meeting.cur_num >= meeting.max_num) {
             throw new Error("모임 인원이 모두 찼습니다.");
           }
@@ -225,7 +214,6 @@ class MeetingService {
             throw new Error("스케줄이 겹칩니다. 다른 모임에 참가하세요.");
           }
 
-          // 참가자 추가
           await MeetingParticipant.create(
             { meeting_id: meetingId, user_id: userId },
             { transaction }
@@ -271,11 +259,7 @@ class MeetingService {
         });
     }
 
-    /**
-     * 번개 모임 목록 조회
-     * @param {number} userId - 사용자 ID
-     * @returns {Promise<Array<MeetingResponseDTO>>} - 모임 목록 DTO 배열
-     */
+    
     async getMeetings(userId) {
         const meetings = await Meeting.findAll({
             attributes: [
@@ -295,7 +279,7 @@ class MeetingService {
                     model: MeetingParticipant,
                     as: 'participants',
                     where: { user_id: userId }, // userId와 매핑된 미팅만 가져옴
-                    attributes: [], // MeetingParticipant 테이블의 데이터는 필요 없으므로 제외
+                    attributes: [], 
                 },
                 {
                     model: User,
@@ -311,11 +295,7 @@ class MeetingService {
         });
     }
 
-    /**
-     * 번개 모임 마감
-     * @param {number} meetingId - 모임 ID
-     * @returns {Promise<Meeting>} - 마감된 모임 객체
-     */
+  
     async closeMeeting(meetingId) {
         const meeting = await Meeting.findByPk(meetingId);
         if (!meeting) {
@@ -329,12 +309,7 @@ class MeetingService {
         return meeting;
     }
 
-    /**
-     * 번개 모임 참가
-     * @param {number} meetingId - 모임 ID
-     * @param {number} userId - 사용자 ID
-     * @returns {Promise<void>}
-     */
+  
     async joinMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
         console.log(`참여하려는 모임: ${JSON.stringify(meeting)}`);
@@ -422,11 +397,7 @@ class MeetingService {
         });
     }
 
-    /**
-     * 번개 모임 상세 조회
-     * @param {number} meetingId - 모임 ID
-     * @returns {Promise<MeetingDetailResponseDTO>} - 모임 상세 DTO
-     */
+    
     async getMeetingDetail(meetingId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
