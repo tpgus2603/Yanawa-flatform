@@ -7,6 +7,7 @@ const Schedule = require('./Schedule');
 const Meeting = require('./Meeting');
 const MeetingParticipant = require('./MeetingParticipant'); //폴더명수정 
 const Friend = require('./Friend');
+const FcmToken = require('./fcmToken');
 
 module.exports = {
   sequelize,
@@ -15,4 +16,5 @@ module.exports = {
   Meeting,
   MeetingParticipant,
   Friend,
+  FcmToken, 
 };
