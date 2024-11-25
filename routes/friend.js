@@ -37,7 +37,7 @@ router.post('/request/:friendId/reject', FriendController.rejectRequest);
 
 /**
  * 친구 목록 조회
- * GET /api/friend/all
+ * GET /api/friend/all?page=1&size=20
  */
 router.get('/all', FriendController.getFriendList);
 

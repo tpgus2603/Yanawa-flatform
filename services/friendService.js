@@ -191,7 +191,9 @@ class FriendService {
      * @param {number} offset - 페이징 오프셋
      * @returns {Promise<Array<FriendListDTO>>} - 친구 목록 DTO 배열
      */
-    async getFriendList(userId, limit = 20, offset = 0) {
+    async getFriendList(userId, pagination) {
+        const { limit = 20, offset = 0 } = pagination;
+    
         const friends = await Friend.findAll({
             where: {
                 [Op.or]: [
@@ -212,13 +214,20 @@ class FriendService {
                     attributes: ['id', 'name', 'email']
                 }
             ],
-            order: [['id', 'ASC']], 
-            limit,
+            order: [['id', 'ASC']],
+            limit: limit + 1, // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
             offset
         });
-
-
-        return friends.map(friend => new FriendListDTO(friend, userId));
+    
+        const hasNext = friends.length > limit;
+        const content = friends.slice(0, limit).map(friend => new FriendListDTO(friend, userId));
+    
+        return {
+            content,
+            page: offset / limit,
+            size: limit,
+            hasNext
+        };
     }
 
     /**

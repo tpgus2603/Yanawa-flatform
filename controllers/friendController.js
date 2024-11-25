@@ -137,15 +137,27 @@ class friendController {
 
     /**
      * 친구 목록 조회
-     * GET /api/friend/all/:offset
+     * GET /api/friend/all?page=1&size=20
      */
     async getFriendList(req, res) {
         try {
             const userId = req.user.id;
-            const friends = await FriendService.getFriendList(userId,20,req.param);
+            const page = parseInt(req.query.page) || 0;
+            const size = parseInt(req.query.size) || 20;
+            
+            const friends = await FriendService.getFriendList(userId, {
+                limit: size,
+                offset: page * size
+            });
+
             return res.status(200).json({
                 success: true,
-                data: friends
+                data: {
+                    content: friends,
+                    page: page,
+                    size: size,
+                    hasNext: friends.length === size 
+                }
             });
         } catch (error) {
             return res.status(500).json({
