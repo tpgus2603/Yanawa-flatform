@@ -143,50 +143,77 @@ describe('Friend Service', () => {
     });
 
     describe('getFriendList', () => {
-        test('should retrieve friend list with correct pagination', async () => {
+        beforeEach(async () => {
             await friendService.sendFriendRequest(1, 2);
             await friendService.acceptFriendRequest(2, 1);
-
             await friendService.sendFriendRequest(1, 3);
             await friendService.acceptFriendRequest(3, 1);
-
+    
             // 추가 더미데이터 생성
             for (let i = 4; i <= 23; i++) {
-                // Create dummy users
                 await User.create({
                     id: i,
                     name: `User${i}`,
                     email: `user${i}@example.com`,
                 });
-
-                // Alice랑 친구맺기
                 await friendService.sendFriendRequest(1, i);
                 await friendService.acceptFriendRequest(i, 1);
             }
-
-            // Alice 친구: Bob (2), Charlie (3), User4부터 User23까지 (총 22명)
-            const limit = 5;
-            const offset = 0;
-            const friendsPage1 = await friendService.getFriendList(1, limit, offset);
-            expect(friendsPage1.length).toBe(limit);
-            const expectedNamesPage1 = ['Bob', 'Charlie', 'User4', 'User5', 'User6'];
-            const receivedNamesPage1 = friendsPage1.map(friend => friend.friendInfo.name);
-            expectedNamesPage1.forEach(name => {
-                expect(receivedNamesPage1).toContain(name);
-            });
-
-            const friendsPage2 = await friendService.getFriendList(1, limit, limit);
-            expect(friendsPage2.length).toBe(limit);
-            const expectedNamesPage2 = ['User7', 'User8', 'User9', 'User10', 'User11'];
-            const receivedNamesPage2 = friendsPage2.map(friend => friend.friendInfo.name);
-            expectedNamesPage2.forEach(name => {
-                expect(receivedNamesPage2).toContain(name);
-            });
         });
-
-        test('should return empty array when user has no friends', async () => {
-            const friends = await friendService.getFriendList(999); // Non-existing user
-            expect(friends.length).toBe(0);
+    
+        test('작은 size로 여러 페이지 조회', async () => {
+            const size = 10;
+            
+            // 첫 페이지
+            const page1 = await friendService.getFriendList(1, {
+                limit: size,
+                offset: 0
+            });
+            expect(page1.content.length).toBe(size);
+            expect(page1.hasNext).toBe(true);
+            
+            // 두 번째 페이지
+            const page2 = await friendService.getFriendList(1, {
+                limit: size,
+                offset: size
+            });
+            expect(page2.content.length).toBe(size);
+            expect(page2.hasNext).toBe(true);
+            
+            // 마지막 페이지
+            const page3 = await friendService.getFriendList(1, {
+                limit: size,
+                offset: size * 2
+            });
+            expect(page3.content.length).toBe(2);
+            expect(page3.hasNext).toBe(false);
+        });
+    
+        test('페이지 순서 검증', async () => {
+            const size = 5;
+            const page1 = await friendService.getFriendList(1, {
+                limit: size,
+                offset: 0
+            });
+            const page2 = await friendService.getFriendList(1, {
+                limit: size,
+                offset: size
+            });
+    
+            const names1 = page1.content.map(friend => friend.friendInfo.name);
+            const names2 = page2.content.map(friend => friend.friendInfo.name);
+    
+            expect(names1).toEqual(['Bob', 'Charlie', 'User4', 'User5', 'User6']);
+            expect(names2).toEqual(['User7', 'User8', 'User9', 'User10', 'User11']);
+        });
+    
+        test('존재하지 않는 페이지 조회', async () => {
+            const response = await friendService.getFriendList(1, {
+                limit: 20,
+                offset: 100
+            });
+            expect(response.content).toHaveLength(0);
+            expect(response.hasNext).toBe(false);
         });
     });
 
