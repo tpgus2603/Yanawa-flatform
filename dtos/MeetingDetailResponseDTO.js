@@ -1,6 +1,6 @@
 // dtos/MeetingResponseDTO.js
 class MeetingDetailResponseDTO {
-  constructor(meeting) {
+  constructor(meeting, isScheduleConflict) {
       this.id = meeting.id;
       this.title = meeting.title;
       this.description = meeting.description;
@@ -10,6 +10,7 @@ class MeetingDetailResponseDTO {
       this.time_idx_deadline = meeting.time_idx_deadline;
       this.type = meeting.type;
       this.creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
+      this.isScheduleConflict = isScheduleConflict; 
       this.participants = meeting.participants.map(participant => ({
           userId: participant.user_id,
           name: participant.participantUser ? participant.participantUser.name : 'Unknown',
