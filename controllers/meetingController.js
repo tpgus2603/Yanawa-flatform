@@ -21,9 +21,9 @@ class MeetingController {
     async createMeeting(req, res) {
         try {
             const userId = req.user.id;
-            const meetingData = { 
-                ...req.body, 
-                created_by: userId 
+            const meetingData = {
+                ...req.body,
+                created_by: userId
             };
             const createMeetingDTO = new CreateMeetingRequestDTO(meetingData);
             createMeetingDTO.validate();
@@ -43,8 +43,23 @@ class MeetingController {
     async getMeetings(req, res) {
         try {
             const userId = req.user.id; // 인증 미들웨어를 통해 설정된 사용자 ID
-            const meetings = await MeetingService.getMeetings(userId);
-            res.status(200).json(meetings);
+            const page = parseInt(req.query.page) || 0;
+            const size = parseInt(req.query.size) || 20;
+
+            const meetings = await MeetingService.getMeetings(userId, {
+                limit: size,
+                offset: page * size
+            });
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    content: meetings.content,
+                    page: page,
+                    size: size,
+                    hasNext: meetings.hasNext
+                }
+            });
         } catch (err) {
             console.error('모임 목록 조회 오류:', err);
             res.status(500).json({ error: err.message || '모임 목록 조회 실패' });
@@ -77,7 +92,7 @@ class MeetingController {
             const userId = req.user.id; // 인증 미들웨어를 통해 설정된 사용자 ID
 
             await MeetingService.joinMeeting(meetingId, userId);
-            
+
             res.status(200).json({ message: '모임 및 채팅방 참가 완료' });
         } catch (err) {
             console.error('모임 참가 오류:', err);

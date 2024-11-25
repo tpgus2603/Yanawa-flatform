@@ -281,7 +281,9 @@ class MeetingService {
     }
 
     
-    async getMeetings(userId) {
+    async getMeetings(userId, pagination) {
+        const { limit = 20, offset = 0 } = pagination;
+
         const meetings = await Meeting.findAll({
             attributes: [
                 'id',
@@ -307,26 +309,36 @@ class MeetingService {
                     as: 'creator',
                     attributes: ['name'],
                 }
-            ]
+            ],
+            order: [['createdAt', 'DESC']],
+            offset
         });
     
-        return Promise.all(meetings.map(async (meeting) => {
-            const isParticipant = await MeetingParticipant.findOne({
-                where: {
-                    meeting_id: meeting.id,
-                    user_id: userId
-                }
-            });
+        const hasNext = meetings.length > limit;
+        const content = await Promise.all(
+            meetings.slice(0, limit).map(async (meeting) => {
+                const isParticipant = await MeetingParticipant.findOne({
+                    where: {
+                        meeting_id: meeting.id,
+                        user_id: userId
+                    }
+                });
     
-            const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-                userId,
-                meeting.time_idx_start,
-                meeting.time_idx_end
-            );
+                const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                    userId,
+                    meeting.time_idx_start,
+                    meeting.time_idx_end
+                );
     
-            const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-            return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
-        }));
+                const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
+                return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
+            })
+        );
+    
+        return {
+            content,
+            hasNext
+        };
     }
 
   
