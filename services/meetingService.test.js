@@ -117,7 +117,7 @@ describe('MeetingService - 전체 미팅 조회 테스트', () => {
         await MeetingService.createMeeting(meetingData1);
         await MeetingService.createMeeting(meetingData2);
 
-        const meetings = await MeetingService.getMeetings(1);
+        const {content: meetings} = await MeetingService.getMeetings(1, {limit: 20, offset: 0});
 
         expect(meetings.length).toBe(2);
 
@@ -178,9 +178,9 @@ describe('MeetingService - 전체 미팅 조회 테스트', () => {
             events: [{ time_idx: 51 }]
         });
 
-        const aliceMeetings = await MeetingService.getMeetings(1);
-        const bobMeetings = await MeetingService.getMeetings(2);
-        const charlieMeetings = await MeetingService.getMeetings(3);
+        const {content: aliceMeetings } = await MeetingService.getMeetings(1, {limit: 20, offset: 0});
+        const {content: bobMeetings } = await MeetingService.getMeetings(2, {limit: 20, offset: 0});
+        const {content: charlieMeetings } = await MeetingService.getMeetings(3, {limit: 20, offset: 0});
 
         expect(aliceMeetings[0].isScheduleConflict).toBe(false);
         expect(bobMeetings[0].isScheduleConflict).toBe(true);
@@ -232,7 +232,7 @@ describe('MeetingService - Integration: createMeeting, joinMeeting, getMeetings'
         await MeetingService.joinMeeting(createdMeeting.meeting_id, 3); // Charlie joins
 
         // Step 3: Retrieve meetings for Alice (creator)
-        const aliceMeetings = await MeetingService.getMeetings(1);
+        const {content: aliceMeetings } = await MeetingService.getMeetings(1, {limit: 20, offset: 0});
         expect(aliceMeetings).toBeDefined();
         expect(aliceMeetings.length).toBe(1);
 
@@ -242,7 +242,7 @@ describe('MeetingService - Integration: createMeeting, joinMeeting, getMeetings'
         expect(aliceMeeting.isParticipant).toBe(true);
 
         // Step 4: Retrieve meetings for Bob (participant)
-        const bobMeetings = await MeetingService.getMeetings(2);
+        const {content: bobMeetings } = await MeetingService.getMeetings(2, {limit: 20, offset: 0});
         expect(bobMeetings).toBeDefined();
         expect(bobMeetings.length).toBe(1);
 
@@ -252,7 +252,7 @@ describe('MeetingService - Integration: createMeeting, joinMeeting, getMeetings'
         expect(bobMeeting.isParticipant).toBe(true);
 
         // Step 5: Retrieve meetings for Charlie (participant)
-        const charlieMeetings = await MeetingService.getMeetings(3);
+        const {content: charlieMeetings } = await MeetingService.getMeetings(3, {limit: 20, offset: 0});
         expect(charlieMeetings).toBeDefined();
         expect(charlieMeetings.length).toBe(1);
 
@@ -387,7 +387,7 @@ describe('MeetingService2', () => {
         await MeetingService.joinMeeting(meeting2.meeting_id, 3); // Charlie가 Lunch Meeting 참여
 
         // 3단계: Charlie의 참여 모임 조회
-        const charlieMeetings = await MeetingService.getMeetings(3); // Charlie의 사용자 ID
+        const {content: charlieMeetings } = await MeetingService.getMeetings(3, {limit: 20, offset: 0}); // Charlie의 사용자 ID
         expect(charlieMeetings).toBeDefined();
         expect(Array.isArray(charlieMeetings)).toBe(true);
         expect(charlieMeetings.length).toBe(2); // Charlie는 2개의 모임에 참여
@@ -458,9 +458,10 @@ describe('MeetingService2', () => {
         await MeetingService.joinMeeting(meeting2.meeting_id, 3);
 
         // 3단계: 각 사용자의 모임 조회
-        const aliceMeetings = await MeetingService.getMeetings(1);
-        const bobMeetings = await MeetingService.getMeetings(2);
-        const charlieMeetings = await MeetingService.getMeetings(3);
+        const pagination = {limit: 20, offset:0 };
+        const {content: aliceMeetings} = await MeetingService.getMeetings(1, pagination);
+        const {content: bobMeetings} = await MeetingService.getMeetings(2, pagination);
+        const {content: charlieMeetings} = await MeetingService.getMeetings(3, pagination);
 
         // 모든 미팅이 조회되어야 함
         expect(aliceMeetings.length).toBe(2);
