@@ -1,22 +1,11 @@
 const chatService = require('../services/chatService');
 
-// 내부용 채팅방 생성
-exports.createChatRoomInternal = async (params) => {
+exports.createChatRoom = async (params) => {
   try {
-    return await chatService.createChatRoom(params);
+    const chatRoomId = await chatService.createChatRoom(params);
+    res.json(chatRoomId);
   } catch (err) {
-    console.error('Error in createChatRoomInternal:', err);
-    return { success: false, error: err.message };
-  }
-};
-
-// 새 채팅방 생성
-exports.createChatRoom = async (req, res) => {
-  try {
-    const chatRoomId = await chatService.createChatRoom();
-    res.json({ chatRoomId });
-  } catch (err) {
-    console.error('Error creating room:', err);
+    console.error('Error in createChatRoom:', err);
     res.status(500).json({ error: 'Failed to create room' });
   }
 };
