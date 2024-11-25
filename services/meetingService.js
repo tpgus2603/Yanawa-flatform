@@ -299,21 +299,34 @@ class MeetingService {
                 {
                     model: MeetingParticipant,
                     as: 'participants',
-                    where: { user_id: userId }, // userId와 매핑된 미팅만 가져옴
-                    attributes: [], 
+                    required: false, 
+                    attributes: [],
                 },
                 {
                     model: User,
                     as: 'creator',
-                    attributes: ['name'], // 미팅 생성자의 이름만 필요
-                },
-            ],
+                    attributes: ['name'],
+                }
+            ]
         });
-
-        return meetings.map((meeting) => {
+    
+        return Promise.all(meetings.map(async (meeting) => {
+            const isParticipant = await MeetingParticipant.findOne({
+                where: {
+                    meeting_id: meeting.id,
+                    user_id: userId
+                }
+            });
+    
+            const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                userId,
+                meeting.time_idx_start,
+                meeting.time_idx_end
+            );
+    
             const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-            return new MeetingResponseDTO(meeting, true, false, creatorName);
-        });
+            return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
+        }));
     }
 
   
@@ -451,7 +464,7 @@ class MeetingService {
     
 
     
-    async getMeetingDetail(meetingId) {
+    async getMeetingDetail(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
                 {
@@ -465,19 +478,25 @@ class MeetingService {
                     include: [
                         {
                             model: User,
-                            as: "user", // 'participantUser'에서 'user'로 수정
+                            as: "user",
                             attributes: ["name", "email"],
-                        },
-                    ],
-                },
-            ],
+                        }
+                    ]
+                }
+            ]
         });
-
+    
         if (!meeting) {
             throw new Error("모임을 찾을 수 없습니다.");
         }
-
-        return new MeetingDetailResponseDTO(meeting);
+    
+        const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+            userId,
+            meeting.time_idx_start,
+            meeting.time_idx_end
+        );
+    
+        return new MeetingDetailResponseDTO(meeting, hasConflict);
     }
 
     /**
