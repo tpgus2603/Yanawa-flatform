@@ -2,7 +2,20 @@ const http = require('http');
 const crypto = require('crypto');
 // const ChatRoom = require('./models/chatRoom.js');
 const mongoose = require('mongoose');
+const admin = require('firebase-admin');
+const dotenv = require('dotenv');
 const ChatRoom = require('./models/chatRooms');
+
+// .env 파일 로드
+dotenv.config();
+
+// 서비스 계정 키 파일 경로를 환경 변수에서 가져오기
+const serviceAccountPath = process.env.FIREBASE_CREDENTIAL_PATH;
+
+// Firebase Admin SDK 초기화
+admin.initializeApp({
+  credential: admin.credential.cert(require(serviceAccountPath)),
+});
 
 // WebSocket 관련 데이터
 let clients = [];
@@ -85,8 +98,6 @@ function startWebSocketServer() {
         if (type === 'join') {
           chatRoomId = clientChatRoomId;
           nickname = clientNickname;
-          console.log("join시 chatRoomId", chatRoomId);
-          console.log("join시 nickname", nickname);
 
           await ChatRoom.updateOne(
             { chatRoomId },
@@ -103,32 +114,42 @@ function startWebSocketServer() {
           }
 
           const chatRoom = await ChatRoom.findOne({ chatRoomId });
-          console.log("join시 chatRoom", chatRoom);
-          if (!chatRoom) {
-            console.error(`ChatRoom을 찾을 수 없습니다: chatRoomId = ${chatRoomId}`);
-          } else {
-            console.log(`ChatRoom 조회 성공: ${chatRoom}`);
-          }
 
-          const isAlreadyParticipant = chatRoom.participants.includes(nickname);
-          if (!isAlreadyParticipant) {
+          // 참가자 확인
+          const participantIndex = chatRoom.participants.findIndex(participant => participant.name === nickname);
+          if (participantIndex !== -1) {
+            const existingParticipant = chatRoom.participants[participantIndex];
+
+            // 참가자 상태 업데이트
+            existingParticipant.isOnline = true;
+            existingParticipant.lastReadAt = new Date();
+
+            await chatRoom.save();
+          } else {
+            // 새 참가자 추가
             const joinMessage = {
               message: `${nickname}님이 참가했습니다.`,
               timestamp: new Date(),
               type: 'join'
             };
 
-            chatRooms[chatRoomId].push(joinMessage);
-
-            await ChatRoom.updateOne({ chatRoomId }, {
-              $push: { messages: joinMessage, participants: nickname }
+            chatRoom.participants.push({
+              name: nickname,
+              fcmTokens: parsedData.fcmToken ? [parsedData.fcmToken] : [],
+              lastReadAt: new Date(),
+              lastReadLogId: null,
+              isOnline: true,
             });
+
+            chatRoom.messages.push(joinMessage);
+
+            await chatRoom.save();
 
             clients.forEach(client => {
               client.write(constructReply(JSON.stringify(joinMessage)));
             });
-          } else {
-            console.log(`${nickname}은 이미 채팅방에 참가 중입니다.`);
+
+            console.log(`${nickname} 새 참가자로 추가`);
           }
 
           try {
@@ -177,12 +198,63 @@ function startWebSocketServer() {
               client.write(constructReply(JSON.stringify(messageData)));
               console.log('채팅 메시지 전송:', messageData);
             });
-  
+
+            // 오프라인 사용자에게 FCM 푸시 알림 전송
+            const chatRoom = await ChatRoom.findOne({ chatRoomId });
+            const offlineParticipants = chatRoom.participants.filter(participant => {
+            // isOnline 상태를 Map에서 가져오기
+            const isOnline = chatRoom.isOnline.get(participant.name);
+              return isOnline === false; // 정확히 false인 사용자만 필터링
+            });
+
+
+            for (const participant of offlineParticipants) {
+              const tokens = participant.fcmTokens || [];
+              // console("푸시 알림 보내는 토큰", tokens);
+              if (tokens.length > 0) {
+                const message = {
+                  tokens, // FCM 토큰 배열
+                  notification: {
+                    title: `${chatRoom.chatRoomName}`,
+                    body: `${nickname}: ${text}`,
+                  },
+                  data: {
+                    key1: 'value1',
+                    key2: 'value2',
+                  },
+                  android: {
+                    priority: 'high',
+                  },
+                  apns: {
+                    payload: {
+                      aps: {
+                        sound: 'default',
+                      },
+                    },
+                  },
+                };
+
+                try {
+                  console.log(`푸시 알림 전송 중 (${participant.name}):`, message); // 디버깅 로그 추가
+                  const response = await admin.messaging().sendEachForMulticast(message);
+                  console.log(`푸시 알림 전송 성공 (${participant.name}):`, response.successCount);
+                } catch (error) {
+                  console.error(`푸시 알림 전송 실패 (${participant.name}):`, error);
+                }
+              } else {
+                console.log(`사용자 ${participant.name}의 FCM 토큰이 없습니다.`);
+              }
+            }
           } catch (err) {
             console.error('MongoDB 채팅 메시지 저장 오류:', err);
           }
         } else if (type === 'leave') {
-          const leaveMessage = { message: `${nickname}님이 퇴장했습니다.`, timestamp: new Date() };
+          const leaveMessage = { 
+            message: `${nickname}님이 퇴장했습니다.`, 
+            timestamp: new Date(),
+            type: 'leave'
+          };
+          
           chatRooms[chatRoomId].push(leaveMessage);
 
           await ChatRoom.updateOne(
