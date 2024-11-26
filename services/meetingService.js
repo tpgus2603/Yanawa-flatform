@@ -62,6 +62,15 @@ class MeetingService {
             throw new Error('스케줄이 겹칩니다. 다른 시간을 선택해주세요.');
         }
 
+        const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+            created_by,
+            time_idx_start,
+            time_idx_end
+        );
+        if (hasConflict) {
+            throw new Error('해당 시간에 이미 다른 스케줄이 있습니다.');
+        }
+
         // 트랜잭션을 사용하여 모임 생성과 스케줄 추가를 원자적으로 처리
         return await Meeting.sequelize.transaction(async (transaction) => {
             const chatRoomData = this._constructChatRoomData(title, user, userFcmTokens);
