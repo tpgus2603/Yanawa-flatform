@@ -407,22 +407,6 @@ class MeetingService {
         };
     }
 
-    
-
-  
-    async closeMeeting(meetingId) {
-        const meeting = await Meeting.findByPk(meetingId);
-        if (!meeting) {
-            throw new Error('모임을 찾을 수 없습니다.');
-        }
-        if (meeting.type === 'CLOSE') {
-            throw new Error('이미 마감된 모임입니다.');
-        }
-        meeting.type = 'CLOSE';
-        await meeting.save();
-        return meeting;
-    }
-    
     async getMeetingDetail(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
@@ -529,6 +513,67 @@ class MeetingService {
 
         // 저장
         chatRoom.save();
+    }
+    
+    async leaveMeeting(meetingId, userId) {
+        const meeting = await Meeting.findByPk(meetingId);
+        if (!meeting) {
+            throw new Error('모임을 찾을 수 없습니다.');
+        }
+    
+        await sequelize.transaction(async (transaction) => {
+            // 참가자 확인
+            const participant = await MeetingParticipant.findOne({
+                where: {
+                    meeting_id: meetingId,
+                    user_id: userId
+                },
+                transaction
+            });
+    
+            if (!participant) {
+                throw new Error('참가하지 않은 모임입니다.');
+            }
+    
+            // 생성자는 탈퇴할 수 없음
+            if (meeting.created_by === userId) {
+                throw new Error('모임 생성자는 탈퇴할 수 없습니다.');
+            }
+    
+            // 참가자 제거
+            await MeetingParticipant.destroy({
+                where: {
+                    meeting_id: meetingId,
+                    user_id: userId
+                },
+                transaction
+            });
+    
+            // 관련 스케줄 삭제
+            await Schedule.destroy({
+                where: {
+                    user_id: userId,
+                    title: `번개 모임: ${meeting.title}`,
+                    time_idx: {
+                        [Op.between]: [meeting.time_idx_start, meeting.time_idx_end]
+                    }
+                },
+                transaction
+            });
+    
+            // 채팅방에서 제거
+            const chatRoom = await ChatRooms.findOne({
+                chatRoomId: meeting.chatRoomId
+            });
+            if (chatRoom) {
+                const user = await User.findByPk(userId);
+                chatRoom.participants = chatRoom.participants.filter(p => p !== user.name);
+                await chatRoom.save();
+            }
+    
+            // 현재 인원 수 감소
+            await meeting.decrement('cur_num', { by: 1, transaction });
+        });
     }
 }
 
