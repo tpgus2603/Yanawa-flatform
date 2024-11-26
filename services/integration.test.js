@@ -152,6 +152,20 @@ describe('System Integration Test', () => {
     console.time('Meeting Operations');
 
     // 3-1. 미팅 생성 및 스케줄 자동 등록
+    const aliceConflictMeeting = {
+      title: '스터디 모임',
+      time_idx_start: 36,
+      time_idx_end: 38,
+      created_by: aliceId,
+      type: 'OPEN',
+      time_idx_deadline: 35,
+      location: 'Room A'
+    };
+
+    await expect(
+      MeetingService.createMeeting(aliceConflictMeeting)
+    ).rejects.toThrow('해당 시간에 이미 다른 스케줄이 있습니다');
+
     const meetingData = {
       title: '스터디 모임',
       time_idx_start: 36,
