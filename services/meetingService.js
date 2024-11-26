@@ -1,7 +1,7 @@
 
-const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
-const ChatRoom = require('../models/chatRooms');
-const FcmToken = require('../models/fcmToken');
+// const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
+// const ChatRoom = require('../models/chatRooms');
+// const FcmToken = require('../models/fcmToken');
 // services/meetingService.js
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
@@ -52,15 +52,15 @@ class MeetingService {
         const userFcmTokens = user.fcmTokenList.map((fcmToken) => fcmToken.token);
 
         // 스케줄 충돌 확인
-        const hasConflict = await ScheduleService.checkScheduleOverlap(
-            created_by,
-            new Date(start_time),
-            new Date(end_time)
-        );
+        // const hasConflict = await ScheduleService.checkScheduleOverlap(
+        //     created_by,
+        //     new Date(start_time),
+        //     new Date(end_time)
+        // );
 
-        if (hasConflict) {
-            throw new Error('스케줄이 겹칩니다. 다른 시간을 선택해주세요.');
-        }
+        // if (hasConflict) {
+        //     throw new Error('스케줄이 겹칩니다. 다른 시간을 선택해주세요.');
+        // }
 
         const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
             created_by,
