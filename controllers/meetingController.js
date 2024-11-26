@@ -16,6 +16,7 @@ class MeetingController {
      *     "location": "회의실 A",
      *     "deadline": "2024-04-25T23:59:59Z",
      *     "type": "OPEN" // "OPEN" 또는 "CLOSE"
+     *      "max_num":
      * }
      */
     async createMeeting(req, res) {
