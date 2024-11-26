@@ -1,36 +1,40 @@
 // models/Schedule.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const User = require('./User');
+const User = require('./user');
 
 const Schedule = sequelize.define('Schedule', {
   title: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  start_time: {
-    type: DataTypes.DATE,
+  time_idx: { // 일주일을 15분 단위로 나눈 시간 인덱스
+    type: DataTypes.INTEGER,
     allowNull: false,
-  },
-  end_time: {
-    type: DataTypes.DATE,
-    allowNull: false,
+    validate: {
+      min: 0,
+      max: 671, // 7일 * 24시간 * 4 (15분 단위) - 1
+    },
   },
   is_fixed: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   },
-  expiry_date: {
-    type: DataTypes.DATE,
-    allowNull: true
-  }
 }, {
   tableName: 'Schedules',
-  timestamps: true,  // created_at과 updated_at 자동 관리
+  timestamps: true, // createdAt과 updatedAt 자동 관리
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'time_idx'],
+      name: 'unique_schedule_per_user_time',
+    },
+    {
+      fields: ['time_idx'],
+    },
+  ],
 });
 
-Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
 
 module.exports = Schedule;
