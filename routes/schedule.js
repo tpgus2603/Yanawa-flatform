@@ -20,7 +20,7 @@ router.get('/all', ScheduleController.getAllSchedules);
  * 개별 스케줄 조회
  * Get /api/schedule/:id
  */
-router.get('/:id', ScheduleController.getScheduleById);
+router.get('/:id', ScheduleController.getScheduleByTimeIdx);
 
 /**
  * 스케줄 생성
@@ -32,13 +32,13 @@ router.post('/', ScheduleController.createSchedule);
  * 스케줄 수정
  * PUT /api/schedule/:id
  */
-router.put('/:id', ScheduleController.updateSchedule);
+router.put('/:id', ScheduleController.updateSchedules);
 
 /**
  * 스케줄 삭제
  * DELETE /api/schedule/:id
  */
-router.delete('/:id', ScheduleController.deleteSchedule);
+router.delete('/:id', ScheduleController.deleteSchedules);
 
 
 module.exports = router;

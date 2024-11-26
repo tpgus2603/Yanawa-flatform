@@ -1,4 +1,4 @@
-const ChatRoom = require('../models/ChatRooms');
+const ChatRooms = require('../schemas/ChatRooms');
 const { v4: uuidv4 } = require('uuid');
 
 class ChatService {
@@ -6,7 +6,7 @@ class ChatService {
   async createChatRoom({ meeting_id, participants, chatRoomName }) {
   try {
     const chatRoomId = uuidv4();
-    const newRoom = new ChatRoom({
+    const newRoom = new ChatRooms({
       chatRoomId,
       chatRoomName,
       meeting_id,
@@ -31,7 +31,7 @@ class ChatService {
 
   // 채팅방 목록 조회
   async getChatRooms() {
-    const rooms = await ChatRoom.find({}, { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } });
+    const rooms = await ChatRooms.find({}, { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } });
     return rooms.map(room => {
       const lastMessage = room.messages[0] || {};
       return {
@@ -48,7 +48,7 @@ class ChatService {
 
   // 사용자 상태 업데이트
   async updateStatus(chatRoomId, nickname, isOnline) {
-    await ChatRoom.updateOne(
+    await ChatRooms.updateOne(
       { chatRoomId, "participants.name": nickname },
       { $set: { [`isOnline.${nickname}`]: isOnline } }
     );
@@ -57,7 +57,7 @@ class ChatService {
   // 읽음 상태 업데이트
   async updateReadStatus(chatRoomId, nickname) {
     const now = new Date();
-    await ChatRoom.updateOne(
+    await ChatRooms.updateOne(
       { chatRoomId, "participants.name": nickname },
       { $set: { [`lastReadAt.${nickname}`]: now } }
     );
@@ -65,14 +65,14 @@ class ChatService {
 
   // 읽지 않은 메시지 조회
   async getUnreadMessages(nickname) {
-    const chatRooms = await ChatRoom.find({ "participants.name": nickname });
-    return await Promise.all(chatRooms.map(async (chatRoom) => {
-      const lastReadAt = chatRoom.lastReadAt.get(nickname) || new Date(0);
-      const unreadMessagesCount = chatRoom.messages.filter(message => 
+    const chatRooms = await ChatRooms.find({ "participants.name": nickname });
+    return await Promise.all(chatRooms.map(async (chatRooms) => {
+      const lastReadAt = chatRooms.lastReadAt.get(nickname) || new Date(0);
+      const unreadMessagesCount = chatRooms.messages.filter(message => 
         message.timestamp > lastReadAt
       ).length;
       return {
-        chatRoomId: chatRoom.chatRoomId,
+        chatRoomId: chatRooms.chatRoomId,
         unreadCount: unreadMessagesCount,
       };
     }));
@@ -80,14 +80,14 @@ class ChatService {
 
   // 읽지 않은 메시지 수 조회
   async getUnreadCount(chatRoomId) {
-    const chatRoom = await ChatRoom.findOne({ chatRoomId });
-    if (!chatRoom) {
+    const chatRooms = await ChatRooms.findOne({ chatRoomId });
+    if (!chatRooms) {
       throw new Error('Chat room not found');
     }
 
-    const unreadCounts = chatRoom.participants
-      .filter(participant => chatRoom.lastReadLogId.has(participant.name)) // Map에 존재하는 키만 처리
-      .map(participant => chatRoom.lastReadLogId.get(participant.name)) // lastReadLogId 값 추출
+    const unreadCounts = chatRooms.participants
+      .filter(participant => chatRooms.lastReadLogId.has(participant.name)) // Map에 존재하는 키만 처리
+      .map(participant => chatRooms.lastReadLogId.get(participant.name)) // lastReadLogId 값 추출
       .reduce((acc, logId) => {
         acc[logId] = (acc[logId] || 0) + 1; // logId 기준으로 등장 횟수 누적
         return acc;
@@ -107,7 +107,7 @@ class ChatService {
 
   // 읽은 메시지 로그 ID 업데이트
   async updateReadLogId(chatRoomId, nickname, logId) {
-    await ChatRoom.updateOne(
+    await ChatRooms.updateOne(
       { chatRoomId, "participants.name": nickname },
       { $set: { [`lastReadLogId.${nickname}`]: logId } }
     );
@@ -115,16 +115,16 @@ class ChatService {
 
   // FCM 토큰 업데이트
   async updateFcmToken(chatRoomId, nickname, fcmToken) {
-    const chatRoom = await ChatRoom.findOne({ chatRoomId, "participants.name": nickname });
-    if (!chatRoom) {
+    const chatRooms = await ChatRooms.findOne({ chatRoomId, "participants.name": nickname });
+    if (!chatRooms) {
       throw new Error('Chat room or participant not found');
     }
 
-    const participant = chatRoom.participants.find(p => p.name === nickname);
+    const participant = chatRooms.participants.find(p => p.name === nickname);
     if (participant) {
       if (!participant.fcmTokens.includes(fcmToken)) {
         participant.fcmTokens.push(fcmToken);
-        await chatRoom.save();
+        await chatRooms.save();
       }
     }
   }
@@ -134,13 +134,13 @@ class ChatService {
     let finalLogId = logId;
 
     if (!isOnline && logId === null) {
-      const chatRoom = await ChatRoom.findOne({ chatRoomId });
-      if (chatRoom && chatRoom.messages.length > 0) {
-        finalLogId = chatRoom.messages[chatRoom.messages.length - 1]._id;
+      const chatRooms = await ChatRooms.findOne({ chatRoomId });
+      if (chatRooms && chatRooms.messages.length > 0) {
+        finalLogId = chatRooms.messages[chatRooms.messages.length - 1]._id;
       }
     }
 
-    await ChatRoom.updateOne(
+    await ChatRooms.updateOne(
       { chatRoomId, "participants.name": nickname },
       {
         $set: {
@@ -155,8 +155,8 @@ class ChatService {
   async sendMessage(chatRoomId, sender, messageContent) {
     try {
       // 채팅방 조회
-      const chatRoom = await ChatRoom.findOne({ chatRoomId });
-      if (!chatRoom) {
+      const chatRooms = await ChatRooms.findOne({ chatRoomId });
+      if (!chatRooms) {
         throw new Error('Chat room not found');
       }
 
@@ -167,12 +167,12 @@ class ChatService {
         timestamp: new Date(),
         type: 'message',
       };
-      chatRoom.messages.push(newMessage);
-      await chatRoom.save();
+      chatRooms.messages.push(newMessage);
+      await chatRooms.save();
 
       // 오프라인 사용자 찾기
-      const offlineParticipants = chatRoom.participants.filter(
-        participant => !chatRoom.isOnline[participant.name]
+      const offlineParticipants = chatRooms.participants.filter(
+        participant => !chatRooms.isOnline[participant.name]
       );
 
       // 오프라인 사용자들에게 FCM 푸시 알림 전송
@@ -181,7 +181,7 @@ class ChatService {
         if (tokens.length > 0) {
           const message = {
             notification: {
-              title: `새 메시지: ${chatRoom.chatRoomName}`,
+              title: `새 메시지: ${chatRooms.chatRoomName}`,
               body: `${sender}: ${messageContent}`,
             },
             tokens,
