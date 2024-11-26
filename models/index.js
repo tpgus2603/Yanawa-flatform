@@ -5,6 +5,9 @@ const User = require('./user');
 const Friend = require('./Friend');
 const Schedule = require('./Schedule');
 const Meeting = require('./Meeting');
+const MeetingParticipant = require('./MeetingParticipant'); //폴더명수정 
+const Friend = require('./Friend');
+const FcmToken = require('./fcmToken');
 const MeetingParticipant = require('./MeetingParticipant');
 const ChatRooms = require('./ChatRooms');
 
@@ -35,4 +38,11 @@ module.exports = {
     Meeting,
     MeetingParticipant,
     ChatRooms,
+  sequelize,
+  User,
+  Schedule,
+  Meeting,
+  MeetingParticipant,
+  Friend,
+  FcmToken, 
 };
