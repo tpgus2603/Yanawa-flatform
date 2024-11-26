@@ -1,7 +1,6 @@
 // app.js
 
 require('dotenv').config();
-
 const express = require('express');
 const session = require('express-session');
 const passport = require('./passport'); 
@@ -10,7 +9,7 @@ const { initScheduleCleaner } = require('./utils/scheduler');
 const connectMongoDB = require('./config/mongoose'); // MongoDB 연결
 const { sequelize } = require('./config/sequelize'); // Sequelize 연결
 const cors = require('cors');
-
+const syncRdb = require('./sync'); // Import the syncDatabase function
 const app = express();
 
 // CORS 설정
@@ -43,7 +42,7 @@ app.use(passport.session());
 
 
 app.use(flash());
-
+console.log('MongoDB URI:', process.env.MONGO_URI);
 //라우터 등록 
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
@@ -74,10 +73,9 @@ const PORT = process.env.PORT || 3000;
     // MongoDB 연결
     await connectMongoDB();
     //console.log('✅ MongoDB 연결 성공');
-
+    console.log('MongoDB URI:', process.env.MONGO_URI);
     // MySQL 연결 확인
-    await sequelize.authenticate();
-    //console.log('✅ MySQL 연결 성공');
+    await syncRdb();
 
     // 서버 시작
     app.listen(PORT, () => {
