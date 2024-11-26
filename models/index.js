@@ -7,7 +7,7 @@ const Meeting = require('./Meeting');
 const Friend = require('./Friend');
 const FcmToken = require('./fcmToken');
 const MeetingParticipant = require('./MeetingParticipant');
-const ChatRooms = require('./ChatRooms');
+// const ChatRooms = require('./ChatRooms');
 
 // 관계 설정
 Friend.belongsTo(User, { foreignKey: 'requester_id', as: 'requester' }); // 친구 요청을 보낸 사용자
@@ -35,12 +35,6 @@ module.exports = {
     Schedule,
     Meeting,
     MeetingParticipant,
-    ChatRooms,
-  sequelize,
-  User,
-  Schedule,
-  Meeting,
-  MeetingParticipant,
   Friend,
   FcmToken, 
 };

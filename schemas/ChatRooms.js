@@ -1,27 +1,23 @@
-// schemas/ChatRoom.js
-
 const mongoose = require('mongoose');
 
-const ChatRoomSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  meeting_id: {
-    type: Number, // SQL의 Meetings 테이블 ID 참조
-    default: null,
-  },
-  type: {
-    type: String,
-    enum: ['OPEN', 'CLOSE'],
-    required: true,
-  },
-  created_by: {
-    type: Number, // SQL의 Users 테이블 ID 참조
-    required: true,
-  },
-}, {
-  timestamps: true, // createdAt, updatedAt 자동 관리
-});
+// MongoDB 채팅방 스키마 수정 (FCM 토큰을 배열로 관리)
+const chatRoomsSchema = new mongoose.Schema({
+  chatRoomId: { type: String, required: true, unique: true },
+  chatRoomName: { type: String, required: true },
+  messages: [{
+    sender: String,
+    message: String,
+    timestamp: Date,
+    type: { type: String, default: 'message' }, // 기본값은 'message', 다른 값으로 'join', 'leave' 가능
+  }],
+  participants: [{
+    name: { type: String, required: true },
+    fcmTokens: { type: [String], default: [] }, // FCM 토큰 배열
+  }],
+  lastReadAt: { type: Map, of: Date },
+  lastReadLogId: { type: Map, of: String },
+  isOnline: { type: Map, of: Boolean },
+}, { collection: 'chatrooms' });
 
-module.exports = mongoose.model('ChatRoom', ChatRoomSchema);
+const ChatRooms = mongoose.model('ChatRooms', chatRoomsSchema);
+module.exports = ChatRooms;

@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const sequelize = require('../config/sequelize'); // 트랜잭션 관리를 위해 sequelize 인스턴스 필요
 const { Meeting, MeetingParticipant, User, Schedule, Invite, Friend } = require('../models');
-const ChatRooms = require('../models/ChatRooms');
+const ChatRooms = require('../schemas/ChatRooms');
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
 const CreateMeetingRequestDTO = require('../dtos/CreateMeetingRequestDTO');
@@ -51,16 +51,6 @@ class MeetingService {
         const user = await this._findUserWithFcmTokens(created_by);
         const userFcmTokens = user.fcmTokenList.map((fcmToken) => fcmToken.token);
 
-        // 스케줄 충돌 확인
-        // const hasConflict = await ScheduleService.checkScheduleOverlap(
-        //     created_by,
-        //     new Date(start_time),
-        //     new Date(end_time)
-        // );
-
-        // if (hasConflict) {
-        //     throw new Error('스케줄이 겹칩니다. 다른 시간을 선택해주세요.');
-        // }
 
         const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
             created_by,
