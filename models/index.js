@@ -6,6 +6,7 @@ const Schedule = require('./Schedule');
 const Meeting = require('./Meeting');
 const Friend = require('./Friend');
 const FcmToken = require('./fcmToken');
+const Invite =require('./Invite')
 const MeetingParticipant = require('./MeetingParticipant');
 // const ChatRooms = require('./ChatRooms');
 
@@ -27,6 +28,13 @@ User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipat
 
 Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
+Invite.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
+Invite.belongsTo(User, { foreignKey: 'inviter_id', as: 'inviter' }); // 초대한 사용자
+Invite.belongsTo(User, { foreignKey: 'invitee_id', as: 'invitee' }); // 초대받은 사용자
+
+User.hasMany(Invite, { foreignKey: 'inviter_id', as: 'sentInvites' }); // 보낸 초대 목록
+User.hasMany(Invite, { foreignKey: 'invitee_id', as: 'receivedInvites' }); // 받은 초대 목록
+Meeting.hasMany(Invite, { foreignKey: 'meeting_id', as: 'invites' }); // 해당 미팅의 모든 초대
 
 module.exports = {
     sequelize,
@@ -37,4 +45,5 @@ module.exports = {
     MeetingParticipant,
   Friend,
   FcmToken, 
+  Invite,
 };
