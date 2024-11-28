@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const User = require('./User'); // 올바른 경로 확인
+const User = require('./user'); // 올바른 경로 확인
 
 const FcmToken = sequelize.define('FcmToken', {
   userId: {
@@ -19,11 +19,5 @@ const FcmToken = sequelize.define('FcmToken', {
   tableName: 'FcmTokens',
   timestamps: true,
 });
-
-// 관계 설정
-FcmToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-User.hasMany(FcmToken, { foreignKey: 'userId', as: 'fcmTokenList' });
-
-
 
 module.exports = FcmToken;
