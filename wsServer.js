@@ -4,7 +4,8 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
-const ChatRoom = require('./models/chatRooms');
+const amqp = require('amqplib'); // RabbitMQ 연결
+const ChatRoom = require('./schemas/chatRooms');
 
 // .env 파일 로드
 dotenv.config();
@@ -36,6 +37,28 @@ async function connectMongoDB() {
     console.error('MongoDB 연결 실패:', err);
     process.exit(1);
   }
+}
+
+// RabbitMQ 메시지 발행 함수
+async function publishToQueue(queue, message) {
+  const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+  const channel = await connection.createChannel();
+  await channel.assertQueue(queue, { durable: true });
+  channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+  console.log(`Message sent to queue ${queue}:`, message);
+  setTimeout(() => connection.close(), 500); // 연결 닫기
+}
+
+// RabbitMQ를 통해 푸시 알림 요청을 전송하는 함수
+async function sendPushNotificationRequest(chatRoomName, sender, messageContent, offlineParticipants, chatRoomId) {
+  const event = {
+    chatRoomName,
+    sender,
+    messageContent,
+    offlineParticipants,
+    chatRoomId,
+  };
+  await publishToQueue('chat_push_notifications', event); // push_notifications 큐에 메시지 발행
 }
 
 // 채팅방 기록 불러오기 함수
@@ -207,44 +230,10 @@ function startWebSocketServer() {
               return isOnline === false; // 정확히 false인 사용자만 필터링
             });
 
+            console.log("offlineParticipants", offlineParticipants);
 
-            for (const participant of offlineParticipants) {
-              const tokens = participant.fcmTokens || [];
-              // console("푸시 알림 보내는 토큰", tokens);
-              if (tokens.length > 0) {
-                const message = {
-                  tokens, // FCM 토큰 배열
-                  notification: {
-                    title: `${chatRoom.chatRoomName}`,
-                    body: `${nickname}: ${text}`,
-                  },
-                  data: {
-                    key1: 'value1',
-                    key2: 'value2',
-                  },
-                  android: {
-                    priority: 'high',
-                  },
-                  apns: {
-                    payload: {
-                      aps: {
-                        sound: 'default',
-                      },
-                    },
-                  },
-                };
-
-                try {
-                  console.log(`푸시 알림 전송 중 (${participant.name}):`, message); // 디버깅 로그 추가
-                  const response = await admin.messaging().sendEachForMulticast(message);
-                  console.log(`푸시 알림 전송 성공 (${participant.name}):`, response.successCount);
-                } catch (error) {
-                  console.error(`푸시 알림 전송 실패 (${participant.name}):`, error);
-                }
-              } else {
-                console.log(`사용자 ${participant.name}의 FCM 토큰이 없습니다.`);
-              }
-            }
+            // RabbitMQ에 푸시 알림 요청 발행
+            await sendPushNotificationRequest(chatRoom.chatRoomName, clientNickname, text, offlineParticipants, chatRoomId);
           } catch (err) {
             console.error('MongoDB 채팅 메시지 저장 오류:', err);
           }
