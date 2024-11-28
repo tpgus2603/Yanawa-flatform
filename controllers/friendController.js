@@ -1,4 +1,5 @@
 const FriendService = require('../services/friendService');
+const { User } = require('../models');
 
 class friendController {
         /**
@@ -20,7 +21,7 @@ class friendController {
                 }
                 const friendId = receiver.id;
                 // 친구 요청 보내기 서비스 호출
-                const friendRequest = await friendService.sendFriendRequest(userId, friendId);
+                const friendRequest = await FriendService.sendFriendRequest(userId, friendId);
                 return res.status(201).json({
                     success:true,
                     data:friendRequest

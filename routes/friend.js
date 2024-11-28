@@ -7,9 +7,9 @@ router.use(isLoggedIn);
 
 /**
  * 친구 요청 보내기
- * POST /api/friend/request/:friendId
+ * POST /api/friend/request
  */
-router.post('/request/:friendId', FriendController.sendFriendRequest);
+router.post('/request', FriendController.sendFriendRequest);
 
 /**
  * 받은 친구 요청 목록 조회
