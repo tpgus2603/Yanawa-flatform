@@ -6,15 +6,26 @@
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const sequelize = require('../config/sequelize'); // 트랜잭션 관리를 위해 sequelize 인스턴스 필요
-const { Meeting, MeetingParticipant, User, Schedule, Invite, Friend } = require('../models');
-const ChatRooms = require('../schemas/ChatRooms');
+const { Meeting, MeetingParticipant, User, Schedule, Invite, Friend, FcmToken } = require('../models');
+const ChatRooms = require('../schemas/chatRooms');
 const MeetingResponseDTO = require('../dtos/MeetingResponseDTO');
 const MeetingDetailResponseDTO = require('../dtos/MeetingDetailResponseDTO');
 const CreateMeetingRequestDTO = require('../dtos/CreateMeetingRequestDTO');
 const ScheduleService = require('./scheduleService'); // ScheduleService 임포트
 const chatService = require('./chatService');
+const amqp = require('amqplib'); // RabbitMQ 연결
 
 class MeetingService {
+
+    async publishToQueue(queue, message) {
+        const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+        const channel = await connection.createChannel();
+        await channel.assertQueue(queue, { durable: true });
+        channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+        console.log(`Message sent to queue ${queue}:`, message);
+        setTimeout(() => connection.close(), 500); // 연결 닫기
+    }
+
     /**
      * 현재 시간을 time_idx로 변환하는 유틸리티 함수
      * 월요일부터 일요일까지 15분 단위로 타임 인덱스를 할당
@@ -30,6 +41,16 @@ class MeetingService {
         const totalIdx = adjustedDayOfWeek * 96 + timeIdx; // 주 전체 인덱스
         return totalIdx;
     }
+
+    async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens) {
+        const event = {
+            meetingTitle,
+            inviterName,
+            inviteeTokens,
+        };
+        await this.publishToQueue('meeting_push_notifications', event); // meeting_push_notifications 큐에 메시지 발행
+    }
+
 
     async createMeeting(meetingData) {
         const createMeetingDTO = new CreateMeetingRequestDTO(meetingData);
@@ -49,6 +70,7 @@ class MeetingService {
 
         // 사용자와 FCM 토큰 조회
         const user = await this._findUserWithFcmTokens(created_by);
+        console.log("user", user);  
         const userFcmTokens = user.fcmTokenList.map((fcmToken) => fcmToken.token);
 
 
@@ -121,15 +143,21 @@ class MeetingService {
                 time_idx_start,
                 time_idx_end,
             }, transaction);
-            await ScheduleService.createSchedule({
-                userId: created_by,
-                title: `번개 모임: ${title}`,
-                start_time: new Date(start_time),
-                end_time: new Date(end_time),
-                is_fixed: true,
-            });
 
-            const chatRoom = await ChatRoom.findOne({ chatRoomId: chatRoomId });
+            // 친구 목록에서 FCM 토큰 추출
+            const inviteeTokens = await FcmToken.findAll({
+                where: {
+                    userId: { [Op.in]: invitedFriendIds },
+                },
+                attributes: ['token'],
+            }).then(tokens => tokens.map(token => token.token));
+
+            // RabbitMQ 메시지 발행 (푸시 알림 요청)
+            if (inviteeTokens.length > 0) {
+                await this.sendMeetingPushNotificationRequest(title, user.name, inviteeTokens);
+            }
+
+            const chatRoom = await ChatRooms.findOne({ chatRoomId: chatRoomId });
 
             if (chatRoom) {
                 console.log("채팅방 찾음");
@@ -261,13 +289,31 @@ class MeetingService {
           // 채팅방 참가 (MongoDB)
           const user = await User.findOne({
             where: { id: userId },
-            transaction,
+            include: [
+                {
+                    model: FcmToken,
+                    as: 'fcmTokenList', // FCM 토큰 가져오기
+                    attributes: ['token'],
+                },
+            ],
+            transaction
           });
+
+          const userFcmTokens = user.fcmTokenList.map((token) => token.token);
+
           const chatRoom = await ChatRooms.findOne({
             chatRoomId: meeting.chatRoomId,
           });
+
+          console.log("여기까지");
+          console.log("user.name", user.name);
+          console.log("참가하는 유저 fcm", userFcmTokens);
           if (chatRoom && !chatRoom.participants.includes(user.name)) {
-            chatRoom.participants.push(user.name);
+            // 참가자 추가
+            chatRoom.participants.push({
+                name: user.name,
+                fcmTokens: userFcmTokens, // FCM 토큰 추가
+            });
             chatRoom.isOnline.set(user.name, true);
             chatRoom.lastReadAt.set(user.name, new Date());
             chatRoom.lastReadLogId.set(user.name, null);
