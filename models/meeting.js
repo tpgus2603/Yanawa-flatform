@@ -1,4 +1,4 @@
-// models/Meeting.js
+// models/meeting.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 const User = require('./user');
