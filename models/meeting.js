@@ -1,7 +1,7 @@
 // models/Meeting.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
-const User = require('./User');
+const User = require('./user');
 
 const Meeting = sequelize.define('Meeting', {
     title: {

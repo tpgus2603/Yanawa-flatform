@@ -2,12 +2,12 @@
 
 const sequelize = require('../config/sequelize');
 const User = require('./user');
-const Schedule = require('./Schedule');
-const Meeting = require('./Meeting');
-const Friend = require('./Friend');
+const Schedule = require('./schedule');
+const Meeting = require('./meeting');
+const Friend = require('./friend');
 const FcmToken = require('./fcmToken');
-const Invite =require('./Invite')
-const MeetingParticipant = require('./MeetingParticipant');
+const Invite =require('./invite')
+const MeetingParticipant = require('./meetingParticipant');
 // const ChatRooms = require('./ChatRooms');
 
 // 관계 설정
@@ -28,9 +28,6 @@ User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipat
 
 Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
-
-FcmToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-User.hasMany(FcmToken, { foreignKey: 'userId', as: 'fcmTokenList' });
 
 Invite.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
 Invite.belongsTo(User, { foreignKey: 'inviter_id', as: 'inviter' }); // 초대한 사용자

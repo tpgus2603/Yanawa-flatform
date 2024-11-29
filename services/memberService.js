@@ -1,6 +1,6 @@
-const User = require('../models/User');
+const User = require('../models/user');
 const FcmToken = require('../models/fcmToken');
-const ChatRooms = require('../schemas/ChatRooms');
+const ChatRooms = require('../schemas/chatRooms');
 
 class MemberService {
   async registerToken(email, fcmToken) {

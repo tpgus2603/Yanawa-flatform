@@ -1,7 +1,7 @@
 // services/scheduleService.js
 const sequelize = require('../config/sequelize');
 const { Op } = require('sequelize');
-const Schedule = require('../models/Schedule');
+const Schedule = require('../models/schedule');
 const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
 
 class ScheduleService {
