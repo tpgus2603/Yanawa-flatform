@@ -19,5 +19,5 @@ const chatRoomsSchema = new mongoose.Schema({
   isOnline: { type: Map, of: Boolean },
 }, { collection: 'chatrooms' });
 
-const ChatRooms = mongoose.model('ChatRooms', chatRoomsSchema);
+const ChatRooms = mongoose.models.ChatRooms || mongoose.model('ChatRooms', chatRoomsSchema);
 module.exports = ChatRooms;
