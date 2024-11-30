@@ -14,10 +14,6 @@ async function syncRdb() {
     // 모든 모델 동기화
     await sequelize.sync({ force: true });
     console.log('모든 모델이 성공적으로 동기화되었습니다.');
-
-    // 연결 종료
-    await sequelize.close();
-    console.log('Rdb데이터베이스 연결이 종료되었습니다.');
   } catch (error) {
     console.error('Rdb데이터베이스 연결 실패:', error);
   }
