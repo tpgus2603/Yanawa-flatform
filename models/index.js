@@ -46,5 +46,4 @@ module.exports = {
     MeetingParticipant,
   Friend,
   FcmToken, 
-  Invite,
 };

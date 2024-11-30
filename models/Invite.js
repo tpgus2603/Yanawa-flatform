@@ -1,7 +1,8 @@
-//models/invite.js
-
+// models/invite.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
+const User = require('./user');
+const Meeting = require('./meeting');
 
 const Invite = sequelize.define('Invite', {
     status: {
