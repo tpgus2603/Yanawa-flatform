@@ -1,7 +1,7 @@
 // passport/index.js
 
 const passport = require('passport');
-const User = require('../models/User');
+const User = require('../models/user');
 
 // 직렬화
 passport.serializeUser((user, done) => {
