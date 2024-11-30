@@ -1,4 +1,4 @@
-// schemas/chatRooms.js
+//schemas/chatRooms.js
 const mongoose = require('mongoose');
 
 // MongoDB 채팅방 스키마 수정 (FCM 토큰을 배열로 관리)
