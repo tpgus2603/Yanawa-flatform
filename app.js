@@ -9,9 +9,13 @@ const { initScheduleCleaner } = require('./utils/scheduler');
 const connectMongoDB = require('./config/mongoose'); // MongoDB 연결
 const { sequelize } = require('./config/sequelize'); // Sequelize 연결
 const cors = require('cors');
+const morgan = require('morgan');
 const syncRdb = require('./sync'); // Import the syncDatabase function
 const app = express();
 
+
+
+app.use(morgan('dev'));  //로깅용
 // CORS 설정
 app.use(
   cors({
@@ -72,14 +76,11 @@ const PORT = process.env.PORT || 3000;
   try {
     // MongoDB 연결
     await connectMongoDB();
-    //console.log('✅ MongoDB 연결 성공');
-    console.log('MongoDB URI:', process.env.MONGO_URI);
     // MySQL 연결 확인
     await syncRdb();
-
     // 서버 시작
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+      console.log(`Server is running on ${PORT}`);
     });
   } catch (error) {
     console.error('❌ 서버 시작 중 오류 발생:', error);
