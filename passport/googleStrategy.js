@@ -5,7 +5,7 @@ const User = require('../models/user');
 
 module.exports = new GoogleStrategy(
   {
-    clientID: process.env.GOOGLE_CLIENT_ID, // .env 파일에 설정
+    clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.CALLBACK_URL,
   },
