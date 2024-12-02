@@ -14,7 +14,7 @@ class MeetingController {
      *     "time_idx_start": 40, // 예: 10:00 AM
      *     "time_idx_end": 42,   // 예: 10:30 AM
      *     "location": "회의실 A",
-     *     "deadline": "2024-04-25T23:59:59Z",
+     *     "deadline": "43",
      *     "type": "OPEN" // "OPEN" 또는 "CLOSE"
      *      "max_num":
      * }
