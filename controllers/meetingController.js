@@ -14,7 +14,7 @@ class MeetingController {
      *     "time_idx_start": 40, // 예: 10:00 AM
      *     "time_idx_end": 42,   // 예: 10:30 AM
      *     "location": "회의실 A",
-     *     "deadline": "2024-04-25T23:59:59Z",
+     *     "deadline": "43",
      *     "type": "OPEN" // "OPEN" 또는 "CLOSE"
      *      "max_num":
      * }
@@ -116,6 +116,23 @@ class MeetingController {
             res.status(500).json({ error: err.message || '모임 상세 조회 실패' });
         }
     }
+    /*
+    Delete /api/meetings/:meetingId
+    */
+    async closeMeeting(req,res)
+    {
+    
+        const { meetingId } = req.params;
+        const userid=req.user.id;  
+        try {
+            const meetingDetail = await MeetingService.leaveMeeting(meetingId,userId);
+            res.status(200).json('모임 삭제성공!');
+        } catch (err) {
+            console.error('모임 삭제 오류', err);
+            res.status(500).json({ error: err.message || '모임삭제 실패' });
+        }
+    }
+
 }
 
 module.exports = new MeetingController();
