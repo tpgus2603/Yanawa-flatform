@@ -25,20 +25,26 @@ app.use(
     credentials: true,
   })
 );
+// 
+app.use(
+  session({
+    secret: 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      secure: false, 
+      maxAge: 60 * 60 * 1000, // 1시간
+      sameSite: 'lax', 
+    },
+  })
+);
 
 
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// 세션 설정
-app.use(
-  session({
-    secret: 'your_session_secret', 
-    resave: false,
-    saveUninitialized: false,
-  })
-);
 
 // Passport 초기화 및 세션 연결
 app.use(passport.initialize());
