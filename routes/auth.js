@@ -4,36 +4,20 @@ const passport = require('passport');
 const router = express.Router();
 
 // GET /auth/login
-router.get('/login', (req, res) => {
-  res.send('<a href="/auth/google">Log in with Google</a>');
-});
-
-// GET /auth/logout
-router.get('/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Failed to logout' });
-    }
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000'); // 기본값 설정
-  });
-});
-
-// GET /auth/google
-router.get('/google', (req, res, next) => {
-  // 기본 redirectUrl 설정
+router.get('/login', (req, res, next) => {
+  // 프론트엔드에서 전달한 redirectUrl 가져오기
   const redirectUrl = req.query.redirectUrl || process.env.FRONTEND_URL || 'http://localhost:3000';
 
-  // allowedDomains 배열 확인 및 기본값 설정
+  // redirectUrl 유효성 검증
   const allowedDomains = [process.env.FRONTEND_URL || 'http://localhost:3000'];
-
-  // redirectUrl 검증
-  if (!allowedDomains.some((domain) => redirectUrl && redirectUrl.startsWith(domain))) {
+  if (!allowedDomains.some((domain) => redirectUrl.startsWith(domain))) {
     return res.status(400).json({ error: 'Invalid redirect URL' });
   }
 
-  // 세션에 redirectUrl 저장
+  // redirectUrl 세션에 저장
   req.session.redirectUrl = redirectUrl;
 
+  // Google OAuth 인증 시작
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 });
 
@@ -48,7 +32,7 @@ router.get(
     // 세션에서 redirectUrl 제거
     req.session.redirectUrl = null;
 
-    // 프론트엔드로 리다이렉트
+    // 인증 완료 후 프론트엔드로 리다이렉트
     res.redirect(redirectUrl);
   }
 );
