@@ -19,7 +19,7 @@ app.use(morgan('dev'));  //로깅용
 // CORS 설정
 app.use(
   cors({
-    origin: 'http://localhost:3000', 
+    origin: process.env.FRONTEND_URL, 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
