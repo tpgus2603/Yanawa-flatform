@@ -4,7 +4,7 @@ const { User } = require('../models');
 class friendController {
         /**
          * 친구 요청 보내기
-         * 클라이언트는 userId와 요청을 보낼 사용자의 email을 전송
+         * 클라이언트는 userId와 요청을 보낼 사용자의 email을 body에전송
          */
         async sendFriendRequest(req, res, next) {
             const { userId, email } = req.body;
