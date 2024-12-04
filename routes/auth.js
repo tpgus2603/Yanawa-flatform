@@ -3,7 +3,7 @@ const passport = require('passport');
 
 const router = express.Router();
 
-// GET /auth/login
+// GET api/auth/login
 router.get('/login', (req, res, next) => {
   // 프론트엔드에서 전달한 redirectUrl 가져오기
   const redirectUrl = req.query.redirectUrl || process.env.FRONTEND_URL || 'http://localhost:3000';

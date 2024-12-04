@@ -1,22 +1,22 @@
-node:internal/modules/cjs/loader:1143
-  throw err;
-  ^
-
-Error: Cannot find module './resources/firebase/yanawa-89d9d-firebase-adminsdk-d1inm-24566bf0b9.json'
-Require stack:
-- /home/ubuntu/webback/wsServer.js
-    at Module._resolveFilename (node:internal/modules/cjs/loader:1140:15)
-    at Module._load (node:internal/modules/cjs/loader:981:27)
-    at Module.require (node:internal/modules/cjs/loader:1231:19)
-    at require (node:internal/modules/helpers:177:18)
-    at Object.<anonymous> (/home/ubuntu/webback/wsServer.js:18:37)
-    at Module._compile (node:internal/modules/cjs/loader:1364:14)
-    at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
-    at Module.load (node:internal/modules/cjs/loader:1203:32)
-    at Module._load (node:internal/modules/cjs/loader:1019:12)
-    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [ '/home/ubuntu/webback/wsServer.js' ]
+(node:4551) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4551) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+MongoDB 연결 실패: MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at _handleConnectionErrors (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:909:11)
+    at NativeConnection.openUri (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:860:11)
+    at async connectMongoDB (/home/ubuntu/webback/wsServer.js:28:5) {
+  reason: TopologyDescription {
+    type: 'Unknown',
+    servers: Map(1) { 'localhost:27017' => [ServerDescription] },
+    stale: false,
+    compatible: true,
+    heartbeatFrequencyMS: 10000,
+    localThresholdMS: 15,
+    setName: null,
+    maxElectionId: null,
+    maxSetVersion: null,
+    commonWireVersion: 0,
+    logicalSessionTimeoutMinutes: null
+  },
+  code: undefined
 }
-
-Node.js v18.20.5
