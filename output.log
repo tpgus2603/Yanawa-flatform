@@ -1,8 +1,9 @@
 MongoDB URI: mongodb+srv://admin:lim1234!!@goodmeeting.vkniz.mongodb.net/
-(node:8604) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:17474) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:8604) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:17474) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 ✅ MongoDB 연결 성공
 Rdb데이터베이스 연결 성공.
 모든 모델이 성공적으로 동기화되었습니다.
 Server is running on 8080
+[0mGET /api/ [33m404[0m 6.385 ms - 143[0m
