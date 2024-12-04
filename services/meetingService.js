@@ -118,20 +118,16 @@ class MeetingService {
                 { transaction }
             );
 
-            // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
-            const events = [];
-            for (let idx = time_idx_start; idx <= time_idx_end; idx++) {
-                events.push({ time_idx: idx });
-            }
-            await ScheduleService.createSchedules(
-                {
-                    userId: created_by,
-                    title: `번개 모임: ${title}`,
-                    is_fixed: false,
-                    events: events,
-                },
-                transaction
+            const time_indices = Array.from(
+                { length: time_idx_end - time_idx_start + 1 },
+                (_, i) => time_idx_start + i
             );
+            await ScheduleService.createSchedules({
+                userId: created_by,
+                title: `번개 모임: ${title}`,
+                is_fixed: false,
+                time_indices: time_indices,
+            }, transaction);
 
             // 친구 초대 로직 호출
             const invitedFriendIds = await this.sendInvites({
@@ -264,24 +260,17 @@ class MeetingService {
             { transaction }
           );
 
-          // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
-          const events = [];
-          for (
-            let idx = meeting.time_idx_start;
-            idx <= meeting.time_idx_end;
-            idx++
-          ) {
-            events.push({ time_idx: idx });
-          }
-          await ScheduleService.createSchedules(
-            {
-              userId: userId,
-              title: `번개 모임: ${meeting.title}`,
-              is_fixed: false,
-              events: events,
-            },
-            transaction
-          );
+        const time_indices = Array.from(
+            { length: meeting.time_idx_end - meeting.time_idx_start + 1 },
+            (_, i) => meeting.time_idx_start + i
+        );
+        
+        await ScheduleService.createSchedules({
+            userId: userId,
+            title: `번개 모임: ${meeting.title}`,
+            is_fixed: false,
+            time_indices: time_indices,
+        }, transaction);
 
           // 채팅방 참가 (MongoDB)
           const user = await User.findOne({
