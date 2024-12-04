@@ -1,6 +1,6 @@
-(node:4344) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:4551) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:4344) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:4551) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 MongoDB 연결 실패: MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
     at _handleConnectionErrors (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:909:11)
     at NativeConnection.openUri (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:860:11)

@@ -53,9 +53,9 @@ app.use(
     rolling: true,
     cookie: {
       httpOnly: true,
-      secure: false, 
+      secure: true, 
       maxAge: 60 * 60 * 1000, // 1시간
-      sameSite: 'raw', 
+      sameSite: 'none', 
     },
   })
 );

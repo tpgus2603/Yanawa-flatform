@@ -1,23 +1,14 @@
 MongoDB URI: mongodb+srv://admin:lim1234!!@goodmeeting.vkniz.mongodb.net/
-(node:4343) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:4550) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:4343) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:4550) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 ✅ MongoDB 연결 성공
 Rdb데이터베이스 연결 성공.
 모든 모델이 성공적으로 동기화되었습니다.
 Server is running on 8080
 CORS Origin: undefined
-[0mGET /api/auth/login [36m302[0m 7.657 ms - 0[0m
-TypeError: option sameSite is invalid
-    at Object.serialize (/home/ubuntu/webback/node_modules/express-session/node_modules/cookie/index.js:290:15)
-    at setcookie (/home/ubuntu/webback/node_modules/express-session/index.js:665:21)
-    at ServerResponse.<anonymous> (/home/ubuntu/webback/node_modules/express-session/index.js:248:9)
-    at ServerResponse.writeHead (/home/ubuntu/webback/node_modules/on-headers/index.js:35:16)
-    at ServerResponse._implicitHeader (node:_http_server:338:8)
-    at writetop (/home/ubuntu/webback/node_modules/express-session/index.js:284:15)
-    at ServerResponse.end (/home/ubuntu/webback/node_modules/express-session/index.js:351:16)
-    at strategy.redirect (/home/ubuntu/webback/node_modules/passport/lib/middleware/authenticate.js:342:13)
-    at stored (/home/ubuntu/webback/node_modules/passport-oauth2/lib/strategy.js:285:14)
-    at NullStore.store (/home/ubuntu/webback/node_modules/passport-oauth2/lib/state/null.js:5:3)
+[0mGET /api/auth/login [36m302[0m 7.628 ms - 0[0m
 CORS Origin: undefined
-[0mGET /api/schedule/all [33m401[0m 3.524 ms - 44[0m
+[0mGET /api/schedule/all [33m401[0m 3.639 ms - 44[0m
+CORS Origin: undefined
+[0mGET /api/schedule/all [33m401[0m 1.347 ms - 44[0m
