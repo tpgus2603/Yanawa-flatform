@@ -7,7 +7,6 @@ module.exports = new GoogleStrategy(
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.CALLBACK_URL,
-    passReqToCallback: true, // req 객체를 콜백에 전달
   },
   async (req, accessToken, refreshToken, profile, done) => {
     try {

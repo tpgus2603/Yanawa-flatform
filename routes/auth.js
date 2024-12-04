@@ -6,13 +6,8 @@ const router = express.Router();
 // GET api/auth/login
 router.get('/login', (req, res, next) => {
   // 프론트엔드에서 전달한 redirectUrl 가져오기
-  const redirectUrl = req.query.redirectUrl || process.env.FRONTEND_URL || 'http://localhost:3000';
-
-  // redirectUrl 유효성 검증
-  const allowedDomains = [process.env.FRONTEND_URL || 'http://localhost:3000'];
-  if (!allowedDomains.some((domain) => redirectUrl.startsWith(domain))) {
-    return res.status(400).json({ error: 'Invalid redirect URL' });
-  }
+  const redirectUrl = req.query.redirectUrl || process.env.FRONTEND_URL || 'https://yanawa.shop';
+	  // redirectUrl 유효성 검증
 
   // redirectUrl 세션에 저장
   req.session.redirectUrl = redirectUrl;
@@ -20,20 +15,23 @@ router.get('/login', (req, res, next) => {
   // Google OAuth 인증 시작
   passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
 });
-
-// GET /auth/google/callback
 router.get(
   '/google/callback',
   passport.authenticate('google', { failureRedirect: '/auth/login' }),
   (req, res) => {
-    // 세션에서 redirectUrl 가져오기
-    const redirectUrl = req.session.redirectUrl || process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = req.session.redirectUrl || 'https://yanawa.shop';
 
-    // 세션에서 redirectUrl 제거
+
     req.session.redirectUrl = null;
 
-    // 인증 완료 후 프론트엔드로 리다이렉트
-    res.redirect(redirectUrl);
+    req.session.save((err) => {
+      if (err) {
+        console.error('세션 저장 오류:', err);
+        return res.status(500).json({ error: '서버 오류' });
+      }
+
+      res.redirect(redirectUrl);
+    });
   }
 );
 
