@@ -17,9 +17,18 @@ const app = express();
 
 app.use(morgan('dev'));  //로깅용
 // CORS 설정
+<<<<<<< HEAD
 app.use(
   cors({
     origin: process.env.FRONTEND_URL, 
+=======
+
+
+// CORS 설정
+app.use(
+  cors({
+    origin: 'https://yanawa.shop',
+>>>>>>> 64c26d78b38c309501ec96a24f94617332a4adb4
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -41,7 +50,6 @@ app.use(
   })
 );
 
-
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -52,6 +60,9 @@ app.use(passport.session());
 
 
 app.use(flash());
+
+
+app.set('trust proxy', 1);
 console.log('MongoDB URI:', process.env.MONGO_URI);
 //라우터 등록 
 const authRoutes = require('./routes/auth');
