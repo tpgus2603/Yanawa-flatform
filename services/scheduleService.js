@@ -9,158 +9,222 @@ class ScheduleService {
      * 스케줄 생성 (벌크)
      * @param {object} [transaction] - Sequelize 트랜잭션 객체 -> 미팅방에서 쓰기위해 트랜잭션을 넘겨받는걸 추가 
      */
-    async createSchedules({ userId, title, is_fixed, events }, transaction = null) {
-        const scheduleDTOs = [];
-
-        for (const event of events) {
-            const { time_idx } = event;
-
-            // 중복 스케줄 검사
+    async createSchedules({ userId, title, is_fixed, time_indices }, transaction = null) {
+        // 중복 검사
+        for (const time_idx of time_indices) {
             const overlap = await this.checkScheduleOverlap(userId, time_idx, transaction);
             if (overlap) {
-                throw new Error(`Schedule overlaps with existing schedule at time_idx ${time_idx}`);
+                throw new Error(`Schedule overlaps at time_idx ${time_idx}`);
+            }
+        }
+
+        const createdSchedules = await Promise.all(
+            time_indices.map(time_idx =>
+                Schedule.create({
+                    user_id: userId,
+                    title,
+                    time_idx,
+                    is_fixed
+                }, { transaction })
+            )
+        );
+
+        return {
+            id: createdSchedules[0].id,
+            user_id: userId,
+            title,
+            is_fixed,
+            time_indices,
+            createdAt: createdSchedules[0].createdAt,
+            updatedAt: createdSchedules[0].updatedAt
+        };
+    }
+
+    async getAllSchedules(userId) {
+        try {
+            const schedules = await Schedule.findAll({
+                where: { user_id: userId },
+                order: [['time_idx', 'ASC']]
+            });
+
+            return ScheduleResponseDTO.groupSchedules(schedules);
+        } catch (error) {
+            throw new Error(`Failed to fetch schedules: ${error.message}`);
+        }
+    }
+
+    async updateSchedules(userId, updates, transaction = null) {
+        const { originalTitle, title, is_fixed, time_indices } = updates;
+
+        // 기존 스케줄 조회
+        const existingSchedules = await Schedule.findAll({
+            where: {
+                user_id: userId,
+                title: originalTitle
+            },
+            transaction
+        });
+
+        if (existingSchedules.length === 0) {
+            throw new Error('Schedule not found');
+        }
+
+        const existingTimeIndices = existingSchedules.map(s => s.time_idx); // 기존 시간대
+        const toDelete = existingTimeIndices.filter(idx => !time_indices.includes(idx)); // 삭제할 시간대
+        const toAdd = time_indices.filter(idx => !existingTimeIndices.includes(idx)); // 추가할 시간대
+        const t = transaction || await sequelize.transaction();
+
+        try {
+            // 삭제
+            if (toDelete.length > 0) {
+                await Schedule.destroy({
+                    where: {
+                        user_id: userId,
+                        title: originalTitle,
+                        time_idx: {
+                            [Op.in]: toDelete
+                        }
+                    },
+                    transaction: t
+                });
             }
 
-            const scheduleData = {
+            // 제목, 고정/유동 업데이트
+            await Schedule.update(
+                {
+                    title,
+                    is_fixed
+                },
+                {
+                    where: {
+                        user_id: userId,
+                        title: originalTitle
+                    },
+                    transaction: t
+                }
+            );
+
+            // 새로운 time_indices 추가
+            if (toAdd.length > 0) {
+                await Promise.all(
+                    toAdd.map(time_idx =>
+                        Schedule.create({
+                            user_id: userId,
+                            title,
+                            time_idx,
+                            is_fixed
+                        }, { transaction: t })
+                    )
+                );
+            }
+
+            if (!transaction) {
+                await t.commit();
+            }
+
+            return {
+                id: existingSchedules[0].id,
                 user_id: userId,
                 title,
-                time_idx,
                 is_fixed,
+                time_indices,
+                createdAt: existingSchedules[0].createdAt,
+                updatedAt: new Date()
             };
 
-            const schedule = await Schedule.create(scheduleData, { transaction });
-            scheduleDTOs.push(new ScheduleResponseDTO(schedule));
+        } catch (error) {
+            if (!transaction) {
+                await t.rollback();
+            }
+            throw error;
         }
-
-        return scheduleDTOs;
     }
 
-    /**
-     * 스케줄 수정 (벌크)
-     * @param {Array} updates - 수정할 스케줄 배열
-     */
-    async updateSchedules(userId, updates, transaction = null) {
-        const updatedSchedules = [];
+    async deleteSchedules(userId, title, transaction = null) {
+        const deletedSchedules = await Schedule.destroy({
+            where: {
+                user_id: userId,
+                title
+            },
+            transaction
+        });
 
-        for (const update of updates) {
-            const { time_idx, title, is_fixed } = update;
-
-            const schedule = await Schedule.findOne({
-                where: { user_id: userId, time_idx },
-                transaction,
-            });
-
-            if (!schedule) {
-                throw new Error(`Schedule not found at time_idx ${time_idx}`);
-            }
-
-            const updatedData = {};
-            if (title !== undefined) updatedData.title = title;
-            if (is_fixed !== undefined) updatedData.is_fixed = is_fixed;
-
-            const updatedSchedule = await schedule.update(updatedData, { transaction });
-            updatedSchedules.push(new ScheduleResponseDTO(updatedSchedule));
-        }
-
-        return updatedSchedules;
-    }
-
-    /**
-     * 스케줄 삭제 (벌크)
-     * @param {number} userId - 사용자 ID
-     * @param {Array<number>} time_idxs - 삭제할 스케줄의 time_idx 배열
-     * @param {object} [transaction] - Sequelize 트랜잭션 객체
-     */
-    async deleteSchedules(userId, time_idxs, transaction = null) {
-        const deleted_time_idxs = [];
-
-        for (const time_idx of time_idxs) {
-            const deletedCount = await Schedule.destroy({
-                where: { user_id: userId, time_idx },
-                transaction,
-            });
-
-            if (deletedCount === 0) {
-                throw new Error(`Schedule not found at time_idx ${time_idx}`);
-            }
-
-            deleted_time_idxs.push(time_idx);
-        }
-
-        return { deleted_time_idxs };
+        return { deletedCount: deletedSchedules };
     }
 
     /**
      * 특정 time_idx로 스케줄 조회
      */
     async getScheduleByTimeIdx(userId, time_idx) {
+        // 해당 time_idx의 스케줄 찾기
         const schedule = await Schedule.findOne({
-            where: { user_id: userId, time_idx },
+            where: { user_id: userId, time_idx }
         });
 
         if (!schedule) {
             throw new Error('Schedule not found');
         }
 
-        return new ScheduleResponseDTO(schedule);
+        // 같은 제목의 모든 스케줄 찾기
+        const relatedSchedules = await Schedule.findAll({
+            where: {
+                user_id: userId,
+                title: schedule.title,
+                is_fixed: schedule.is_fixed
+            },
+            order: [['time_idx', 'ASC']]
+        });
+
+        return ScheduleResponseDTO.groupSchedules(relatedSchedules)[0];
     }
 
-    /**
-     * 모든 스케줄 조회
-     */
     async getAllSchedules(userId) {
         try {
             const schedules = await Schedule.findAll({
                 where: { user_id: userId },
-                order: [['time_idx', 'ASC']],
+                order: [['time_idx', 'ASC']]
             });
-            return schedules.map((schedule) => new ScheduleResponseDTO(schedule));
+            return ScheduleResponseDTO.groupSchedules(schedules);
         } catch (error) {
             throw new Error(`Failed to fetch schedules: ${error.message}`);
         }
     }
 
-    /**
-     * 중복 스케줄 검사
-     */
     async checkScheduleOverlap(userId, time_idx, transaction = null) {
         const overlappingSchedule = await Schedule.findOne({
             where: { user_id: userId, time_idx },
-            transaction,
+            transaction
         });
-
         return !!overlappingSchedule;
     }
 
     async checkScheduleOverlapByTime(userId, time_idx_start, time_idx_end, transaction = null) {
-        console.log(
-            `checkScheduleOverlapByTime 호출: userId=${userId}, time_idx_start=${time_idx_start}, time_idx_end=${time_idx_end}`
-        );
-        const overlappingSchedule = await Schedule.findOne({
+        const overlappingSchedules = await Schedule.findAll({
             where: {
                 user_id: userId,
                 time_idx: {
-                    [Op.between]: [time_idx_start, time_idx_end] 
+                    [Op.between]: [time_idx_start, time_idx_end]
                 }
             },
-            transaction,
+            transaction
         });
-         console.log(`중복 스케줄: ${JSON.stringify(overlappingSchedule)}`);
-    const result = !!overlappingSchedule;
-    console.log(`스케줄 충돌 결과: ${result}`);
-    return result;
-    }
-    
 
-    /**
-     * 만료된 스케줄 삭제
-     */
+        const groupedSchedules = ScheduleResponseDTO.groupSchedules(overlappingSchedules);
+        const result = groupedSchedules.length > 0;
+
+        console.log(`checkScheduleOverlapByTime 호출: userId=${userId}, time_idx_start=${time_idx_start}, time_idx_end=${time_idx_end}`);
+        console.log(`중복 스케줄: ${JSON.stringify(groupedSchedules)}`);
+        console.log(`스케줄 충돌 결과: ${result}`);
+
+        return result;
+    }
+
     async cleanExpiredSchedules() {
         try {
             const deletedCount = await Schedule.destroy({
-                where: { is_fixed: false },
+                where: { is_fixed: false }
             });
-            //console.log(`Deleted ${deletedCount} flexible schedules.`);
+            return { deletedCount };
         } catch (error) {
             console.error('Failed to clean expired schedules:', error);
             throw error;

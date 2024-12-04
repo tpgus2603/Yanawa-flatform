@@ -23,21 +23,17 @@ class scheduleController {
         try {
             const userId = req.user.id;
             const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('create'); // 'create' 타입 검증
+            const validatedData = scheduleRequestDTO.validate('create');
 
-            const { title, is_fixed, events } = validatedData;
-
-            const schedules = await ScheduleService.createSchedules({
+            const schedule = await ScheduleService.createSchedules({
                 userId,
-                title,
-                is_fixed,
-                events
+                ...validatedData
             });
 
             return res.status(201).json({
                 success: true,
                 data: {
-                    schedules
+                    schedule
                 }
             });
         } catch (error) {
@@ -49,7 +45,7 @@ class scheduleController {
                 }
             });
         }
-    }
+    }   
 
     /**
      * 스케줄 수정
@@ -57,31 +53,28 @@ class scheduleController {
      * Bulk update 지원
      * 요청 본문 예시:
      * {
-     *   updates: [
-     *     { time_idx: 36, title: 'New Title', is_fixed: true },
-     *     { time_idx: 44, title: 'Another Title' },
-     *     // ...
-     *   ]
+     *  "originalTitle": "알고리즘 스터디", // 기존 스케줄의 제목
+     *  "title": "알고리즘 스터디 2.0",     // 변경할 제목 (제목 변경 안할거면 기존 제목을 넣어야함 * -> title로 동일 스케줄을 찾아서)
+     *   "is_fixed": true,  
+     *   "time_indices": [36, 37, 38, 40]   // 변경할 time_indices 배열
      * }
      */
     async updateSchedules(req, res) {
         try {
             const userId = req.user.id;
             const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('bulk_update'); // 'bulk_update' 타입 검증
+            const validatedData = scheduleRequestDTO.validate('bulk_update');
 
-            const { updates } = validatedData;
-
-            const updatedSchedules = await ScheduleService.updateSchedules(userId, updates);
-
+            const updatedSchedule = await ScheduleService.updateSchedules(userId, validatedData);
+            
             return res.status(200).json({
                 success: true,
                 data: {
-                    schedules: updatedSchedules
+                    schedule: updatedSchedule
                 }
             });
         } catch (error) {
-            if (error.code === 'SCHEDULE_NOT_FOUND') {
+            if (error.message === 'Schedule not found') {
                 return res.status(404).json({
                     success: false,
                     error: {
@@ -106,24 +99,21 @@ class scheduleController {
      * Bulk delete 지원
      * 요청 본문 예시:
      * {
-     *   time_idxs: [36, 44, ...]
+     *  "title": "알고리즘 스터디"
      * }
      */
     async deleteSchedules(req, res) {
         try {
             const userId = req.user.id;
             const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('bulk_delete'); // 'bulk_delete' 타입 검증
-
-            const { time_idxs } = validatedData;
-
-            const result = await ScheduleService.deleteSchedules(userId, time_idxs);
+            const validatedData = scheduleRequestDTO.validate('bulk_delete');
+            const result = await ScheduleService.deleteSchedules(userId, validatedData.title);
 
             return res.status(200).json({
                 success: true,
                 data: {
-                    message: 'Schedules successfully deleted',
-                    deleted_time_idxs: result.deleted_time_idxs
+                    message: 'Schedule successfully deleted',
+                    deletedCount: result.deletedCount
                 }
             });
         } catch (error) {
@@ -136,7 +126,6 @@ class scheduleController {
             });
         }
     }
-
     /**
      * 해당 사용자 전체 스케줄 조회
      * GET /api/schedule/all
@@ -148,7 +137,9 @@ class scheduleController {
 
             return res.status(200).json({
                 success: true,
-                data: schedules
+                data: {
+                    schedules
+                }
             });
         } catch (error) {
             return res.status(500).json({
@@ -171,11 +162,15 @@ class scheduleController {
             const { time_idx } = req.params;
             const userId = req.user.id;
 
-            const schedule = await ScheduleService.getScheduleByTimeIdx(userId, parseInt(time_idx, 10));
+            const scheduleRequestDTO = new ScheduleRequestDTO({ time_idx: parseInt(time_idx, 10) });
+            const validatedData = scheduleRequestDTO.validate('get_by_time_idx');
+            const schedule = await ScheduleService.getScheduleByTimeIdx(userId, validatedData.time_idx);
 
             return res.status(200).json({
                 success: true,
-                data: schedule
+                data: {
+                    schedule
+                }
             });
         } catch (error) {
             if (error.message === 'Schedule not found') {
