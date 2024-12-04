@@ -22,13 +22,12 @@ class scheduleController {
     async createSchedule(req, res) {
         try {
             const userId = req.user.id;
-            const { title, is_fixed, time_indices } = req.body;
+            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+            const validatedData = scheduleRequestDTO.validate('create');
 
             const schedule = await ScheduleService.createSchedules({
                 userId,
-                title,
-                is_fixed,
-                time_indices
+                ...validatedData
             });
 
             return res.status(201).json({
@@ -63,15 +62,11 @@ class scheduleController {
     async updateSchedules(req, res) {
         try {
             const userId = req.user.id;
-            const { originalTitle, title, is_fixed, time_indices } = req.body;
+            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+            const validatedData = scheduleRequestDTO.validate('bulk_update');
 
-            const updatedSchedule = await ScheduleService.updateSchedules(userId, {
-                originalTitle, 
-                title,         
-                is_fixed,
-                time_indices
-            });
-
+            const updatedSchedule = await ScheduleService.updateSchedules(userId, validatedData);
+            
             return res.status(200).json({
                 success: true,
                 data: {
@@ -110,9 +105,9 @@ class scheduleController {
     async deleteSchedules(req, res) {
         try {
             const userId = req.user.id;
-            const { title } = req.body;
-
-            const result = await ScheduleService.deleteSchedules(userId, title);
+            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+            const validatedData = scheduleRequestDTO.validate('bulk_delete');
+            const result = await ScheduleService.deleteSchedules(userId, validatedData.title);
 
             return res.status(200).json({
                 success: true,
@@ -167,7 +162,9 @@ class scheduleController {
             const { time_idx } = req.params;
             const userId = req.user.id;
 
-            const schedule = await ScheduleService.getScheduleByTimeIdx(userId, parseInt(time_idx, 10));
+            const scheduleRequestDTO = new ScheduleRequestDTO({ time_idx: parseInt(time_idx, 10) });
+            const validatedData = scheduleRequestDTO.validate('get_by_time_idx');
+            const schedule = await ScheduleService.getScheduleByTimeIdx(userId, validatedData.time_idx);
 
             return res.status(200).json({
                 success: true,
