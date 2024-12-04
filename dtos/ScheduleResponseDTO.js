@@ -1,14 +1,25 @@
 // dtos/ScheduleResponseDTO.js
 
 class ScheduleResponseDTO {
-  constructor(schedule) {
-      this.id = schedule.id;
-      this.user_id = schedule.user_id;
-      this.title = schedule.title;
-      this.time_idx = schedule.time_idx; // 새로운 time_idx 필드 추가
-      this.is_fixed = schedule.is_fixed;
-      this.createdAt = schedule.createdAt;
-      this.updatedAt = schedule.updatedAt;
+  static groupSchedules(schedules) {
+      const grouped = schedules.reduce((acc, schedule) => {
+          const key = `${schedule.title}-${schedule.is_fixed}`;
+          if (!acc[key]) {
+              acc[key] = {
+                  id: schedule.id,
+                  user_id: schedule.user_id,
+                  title: schedule.title,
+                  is_fixed: schedule.is_fixed,
+                  time_indices: [],
+                  createdAt: schedule.createdAt,
+                  updatedAt: schedule.updatedAt
+              };
+          }
+          acc[key].time_indices.push(schedule.time_idx);
+          return acc;
+      }, {});
+
+      return Object.values(grouped);
   }
 }
 
