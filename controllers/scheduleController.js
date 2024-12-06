@@ -1,6 +1,7 @@
 // controllers/scheduleController.js
 const ScheduleService = require('../services/scheduleService');
 const ScheduleRequestDTO = require('../dtos/ScheduleRequestDTO');
+const performanceMonitor = require('../utils/performanceMonitor');
 
 class scheduleController {
     /**
@@ -21,20 +22,20 @@ class scheduleController {
      */
     async createSchedule(req, res) {
         try {
-            const userId = req.user.id;
-            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('create');
+            return await performanceMonitor.measureAsync('createSchedule', async () => {
+                const userId = req.user.id;
+                const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+                const validatedData = scheduleRequestDTO.validate('create');
 
-            const schedule = await ScheduleService.createSchedules({
-                userId,
-                ...validatedData
-            });
+                const schedule = await ScheduleService.createSchedules({
+                    userId,
+                    ...validatedData
+                });
 
-            return res.status(201).json({
-                success: true,
-                data: {
-                    schedule
-                }
+                return res.status(201).json({
+                    success: true,
+                    data: { schedule }
+                });
             });
         } catch (error) {
             return res.status(400).json({
@@ -61,17 +62,17 @@ class scheduleController {
      */
     async updateSchedules(req, res) {
         try {
-            const userId = req.user.id;
-            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('bulk_update');
+            return await performanceMonitor.measureAsync('updateSchedules', async () => {
+                const userId = req.user.id;
+                const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+                const validatedData = scheduleRequestDTO.validate('bulk_update');
 
-            const updatedSchedule = await ScheduleService.updateSchedules(userId, validatedData);
-            
-            return res.status(200).json({
-                success: true,
-                data: {
-                    schedule: updatedSchedule
-                }
+                const updatedSchedule = await ScheduleService.updateSchedules(userId, validatedData);
+
+                return res.status(200).json({
+                    success: true,
+                    data: { schedule: updatedSchedule }
+                });
             });
         } catch (error) {
             if (error.message === 'Schedule not found') {
@@ -104,17 +105,20 @@ class scheduleController {
      */
     async deleteSchedules(req, res) {
         try {
-            const userId = req.user.id;
-            const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
-            const validatedData = scheduleRequestDTO.validate('bulk_delete');
-            const result = await ScheduleService.deleteSchedules(userId, validatedData.title);
+            return await performanceMonitor.measureAsync('deleteSchedules', async () => {
+                const userId = req.user.id;
+                const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
+                const validatedData = scheduleRequestDTO.validate('bulk_delete');
 
-            return res.status(200).json({
-                success: true,
-                data: {
-                    message: 'Schedule successfully deleted',
-                    deletedCount: result.deletedCount
-                }
+                const result = await ScheduleService.deleteSchedules(userId, validatedData.title);
+
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        message: 'Schedule successfully deleted',
+                        deletedCount: result.deletedCount
+                    }
+                });
             });
         } catch (error) {
             return res.status(404).json({
@@ -132,14 +136,14 @@ class scheduleController {
      */
     async getAllSchedules(req, res) {
         try {
-            const userId = req.user.id;
-            const schedules = await ScheduleService.getAllSchedules(userId);
+            return await performanceMonitor.measureAsync('getAllSchedules', async () => {
+                const userId = req.user.id;
+                const schedules = await ScheduleService.getAllSchedules(userId);
 
-            return res.status(200).json({
-                success: true,
-                data: {
-                    schedules
-                }
+                return res.status(200).json({
+                    success: true,
+                    data: { schedules }
+                });
             });
         } catch (error) {
             return res.status(500).json({
@@ -159,18 +163,18 @@ class scheduleController {
      */
     async getScheduleByTimeIdx(req, res) {
         try {
-            const { time_idx } = req.params;
-            const userId = req.user.id;
+            return await performanceMonitor.measureAsync('getScheduleByTimeIdx', async () => {
+                const { time_idx } = req.params;
+                const userId = req.user.id;
+                const scheduleRequestDTO = new ScheduleRequestDTO({ time_idx: parseInt(time_idx, 10) });
+                const validatedData = scheduleRequestDTO.validate('get_by_time_idx');
 
-            const scheduleRequestDTO = new ScheduleRequestDTO({ time_idx: parseInt(time_idx, 10) });
-            const validatedData = scheduleRequestDTO.validate('get_by_time_idx');
-            const schedule = await ScheduleService.getScheduleByTimeIdx(userId, validatedData.time_idx);
+                const schedule = await ScheduleService.getScheduleByTimeIdx(userId, validatedData.time_idx);
 
-            return res.status(200).json({
-                success: true,
-                data: {
-                    schedule
-                }
+                return res.status(200).json({
+                    success: true,
+                    data: { schedule }
+                });
             });
         } catch (error) {
             if (error.message === 'Schedule not found') {
