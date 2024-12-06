@@ -74,6 +74,9 @@ app.use('/api/chat', chatRoutes);
 const memberRoutes = require('./routes/memberRoute');
 app.use('/api/member', memberRoutes);
 
+const sessionRouter = require('./routes/session');
+app.use('/api/session', sessionRouter);
+
 // 스케줄 클리너 초기화
 initScheduleCleaner();
 
