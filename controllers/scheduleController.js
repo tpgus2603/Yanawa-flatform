@@ -23,8 +23,7 @@ class scheduleController {
     async createSchedule(req, res) {
         try {
             return await performanceMonitor.measureAsync('createSchedule', async () => {
-                const userId = 49;
-                // const userId = req.user.id;
+                const userId = req.user.id;
                 const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
                 const validatedData = scheduleRequestDTO.validate('create');
 
@@ -64,8 +63,7 @@ class scheduleController {
     async updateSchedules(req, res) {
         try {
             return await performanceMonitor.measureAsync('updateSchedules', async () => {
-                // const userId = req.user.id;
-                const userId = 49;
+                const userId = req.user.id;
                 const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
                 const validatedData = scheduleRequestDTO.validate('bulk_update');
 
@@ -108,9 +106,7 @@ class scheduleController {
     async deleteSchedules(req, res) {
         try {
             return await performanceMonitor.measureAsync('deleteSchedules', async () => {
-                // const userId = req.user.id;
-                const userId = 49;
-
+                const userId = req.user.id;
                 const scheduleRequestDTO = new ScheduleRequestDTO(req.body);
                 const validatedData = scheduleRequestDTO.validate('bulk_delete');
 
@@ -141,9 +137,7 @@ class scheduleController {
     async getAllSchedules(req, res) {
         try {
             return await performanceMonitor.measureAsync('getAllSchedules', async () => {
-                // const userId = req.user.id;
-                const userId = 49;
-
+                const userId = req.user.id;
                 const schedules = await ScheduleService.getAllSchedules(userId);
 
                 return res.status(200).json({
@@ -171,10 +165,7 @@ class scheduleController {
         try {
             return await performanceMonitor.measureAsync('getScheduleByTimeIdx', async () => {
                 const { time_idx } = req.params;
-                // const userId = req.user.id;
-                const userId = 49;
-
-                
+                const userId = req.user.id;
                 const scheduleRequestDTO = new ScheduleRequestDTO({ time_idx: parseInt(time_idx, 10) });
                 const validatedData = scheduleRequestDTO.validate('get_by_time_idx');
 
