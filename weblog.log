@@ -1,22 +1,5 @@
-(node:23273) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:77052) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:23273) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
-MongoDB 연결 실패: MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
-    at _handleConnectionErrors (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:909:11)
-    at NativeConnection.openUri (/home/ubuntu/webback/node_modules/mongoose/lib/connection.js:860:11)
-    at async connectMongoDB (/home/ubuntu/webback/wsServer.js:28:5) {
-  reason: TopologyDescription {
-    type: 'Unknown',
-    servers: Map(1) { 'localhost:27017' => [ServerDescription] },
-    stale: false,
-    compatible: true,
-    heartbeatFrequencyMS: 10000,
-    localThresholdMS: 15,
-    setName: null,
-    maxElectionId: null,
-    maxSetVersion: null,
-    commonWireVersion: 0,
-    logicalSessionTimeoutMinutes: null
-  },
-  code: undefined
-}
+(node:77052) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+MongoDB에 성공적으로 연결되었습니다.
+WebSocket 채팅 서버가 8081 포트에서 실행 중입니다.

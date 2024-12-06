@@ -1,15 +1,135 @@
-/home/ubuntu/webback/app.js:20
-<<<<<<< HEAD
-^^
-
-SyntaxError: Unexpected token '<<'
-    at internalCompileFunction (node:internal/vm:76:18)
-    at wrapSafe (node:internal/modules/cjs/loader:1283:20)
-    at Module._compile (node:internal/modules/cjs/loader:1328:27)
-    at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
-    at Module.load (node:internal/modules/cjs/loader:1203:32)
-    at Module._load (node:internal/modules/cjs/loader:1019:12)
-    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
-    at node:internal/main/run_main_module:28:49
-
-Node.js v18.20.5
+MongoDB URI: mongodb+srv://admin:lim1234!!@goodmeeting.vkniz.mongodb.net/
+(node:77051) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:77051) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+✅ MongoDB 연결 성공
+Rdb데이터베이스 연결 성공.
+모든 모델이 성공적으로 동기화되었습니다.
+Server is running on 8080
+[0mGET /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php [33m404[0m 9.005 ms - 193[0m
+[0mGET / [33m404[0m 2.052 ms - 139[0m
+[0mGET / [33m404[0m 1.179 ms - 139[0m
+[0mGET / [33m404[0m 1.045 ms - 139[0m
+[0mGET / [33m404[0m 1.827 ms - 139[0m
+[0mGET / [33m404[0m 1.101 ms - 139[0m
+[0mGET /download/powershell/ [33m404[0m 1.186 ms - 159[0m
+[0mGET /get.php [33m404[0m 0.895 ms - 146[0m
+[0mGET / [33m404[0m 1.429 ms - 139[0m
+[0mGET /api/im/v2/app/config [33m404[0m 1.289 ms - 159[0m
+[0mGET /api/ [33m404[0m 1.099 ms - 143[0m
+[0mGET /api/ [33m404[0m 1.036 ms - 143[0m
+[0mGET /api/c/a [33m404[0m 0.920 ms - 146[0m
+[0mGET /api/ping [33m404[0m 0.873 ms - 147[0m
+[0mGET /api/notice [33m404[0m 0.902 ms - 149[0m
+[0mGET /api/config [33m404[0m 0.936 ms - 149[0m
+[0mGET /api/version [33m404[0m 0.871 ms - 150[0m
+[0mGET /api/v1/config [33m404[0m 1.131 ms - 152[0m
+[0mGET /api/index/web [33m404[0m 0.706 ms - 152[0m
+[0mGET /api/Business/ [33m404[0m 0.752 ms - 152[0m
+[0mGET /api/shop/getKF [33m404[0m 1.018 ms - 153[0m
+[0mGET /api/index/init [33m404[0m 0.893 ms - 153[0m
+[0mGET /api/Event/basic [33m404[0m 0.632 ms - 154[0m
+[0mGET /api/apps/config [33m404[0m 0.583 ms - 154[0m
+[0mGET /api/front/index [33m404[0m 0.941 ms - 154[0m
+[0mGET /api/app/indexList [33m404[0m 0.850 ms - 156[0m
+[0mGET /api/common/config [33m404[0m 0.784 ms - 156[0m
+[0mGET /api/Home/videoNew [33m404[0m 2.733 ms - 156[0m
+[0mGET /api/getCustomLink [33m404[0m 0.672 ms - 156[0m
+[0mGET /api/uploads/apimap [33m404[0m 0.584 ms - 157[0m
+[0mGET /api/v1/member/kefu [33m404[0m 0.642 ms - 157[0m
+[0mGET /api/config/getkefu [33m404[0m 0.684 ms - 157[0m
+[0mGET /api/site/getInfo.do [33m404[0m 0.667 ms - 158[0m
+[0mGET /api/message/webInfo [33m404[0m 0.595 ms - 158[0m
+[0mGET /api/index/webconfig [33m404[0m 0.703 ms - 158[0m
+[0mGET /api/index/getConfig [33m404[0m 0.745 ms - 158[0m
+[0mGET /api/index/grailindex [33m404[0m 0.931 ms - 159[0m
+[0mGET /api/shares/hqStrList [33m404[0m 0.770 ms - 159[0m
+[0mGET /api/user/ismustmobile [33m404[0m 0.753 ms - 160[0m
+[0mGET /api/user/ismustmobile [33m404[0m 0.697 ms - 160[0m
+[0mGET /api/user/ismustmobile [33m404[0m 0.616 ms - 160[0m
+[0mGET /api/banner?appKey=bxefdn [33m404[0m 1.134 ms - 149[0m
+[0mGET /api/Config/getShowConfig [33m404[0m 0.590 ms - 163[0m
+[0mGET /api/home/customerService [33m404[0m 2.229 ms - 163[0m
+[0mGET /api/client/app/config.do [33m404[0m 0.698 ms - 163[0m
+[0mGET /api/product/getPointStore [33m404[0m 0.703 ms - 164[0m
+[0mGET /api/currency/quotation_new [33m404[0m 0.751 ms - 165[0m
+[0mGET /api/vue/transaction/config [33m404[0m 0.821 ms - 165[0m
+[0mGET /api/predict-whole-panel.do [33m404[0m 0.800 ms - 165[0m
+[0mGET /api/common/menus?lang=zh-Hans [33m404[0m 0.767 ms - 155[0m
+[0mGET /api/appVersion?mobile_system=2 [33m404[0m 0.711 ms - 153[0m
+[0mGET /api/public/?service=Home.getConfig [33m404[0m 0.797 ms - 150[0m
+[0mGET /api/unSecurity/app/listAppVersionInfo [33m404[0m 0.793 ms - 176[0m
+[0mGET /api/stock/getSingleStock.do?code=002405 [33m404[0m 0.739 ms - 166[0m
+[0mGET /api/system/systemConfigs/getCustomerServiceLink [33m404[0m 0.780 ms - 186[0m
+[0mGET /api/v/index/queryOfficePage?officeCode=customHomeLink [33m404[0m 0.805 ms - 166[0m
+[0mGET /api/im/v2/app/config [33m404[0m 2.524 ms - 159[0m
+[0mGET /api/ [33m404[0m 0.739 ms - 143[0m
+[0mGET /api/ [33m404[0m 0.792 ms - 143[0m
+[0mGET /api/c/a [33m404[0m 0.761 ms - 146[0m
+[0mGET /api/ping [33m404[0m 0.715 ms - 147[0m
+[0mGET /api/config [33m404[0m 0.930 ms - 149[0m
+[0mPOST /api/notice [33m404[0m 24.787 ms - 150[0m
+[0mGET /api/version [33m404[0m 0.963 ms - 150[0m
+[0mGET /api/v1/config [33m404[0m 0.761 ms - 152[0m
+[0mGET /api/Business/ [33m404[0m 0.618 ms - 152[0m
+[0mGET /api/index/web [33m404[0m 0.595 ms - 152[0m
+[0mGET /api/shop/getKF [33m404[0m 0.747 ms - 153[0m
+[0mGET /api/Event/basic [33m404[0m 0.612 ms - 154[0m
+[0mGET /api/front/index [33m404[0m 0.620 ms - 154[0m
+[0mGET /api/index/init [33m404[0m 0.647 ms - 153[0m
+[0mGET /api/apps/config [33m404[0m 0.657 ms - 154[0m
+[0mGET /api/app/indexList [33m404[0m 0.925 ms - 156[0m
+[0mGET /api/common/config [33m404[0m 0.645 ms - 156[0m
+[0mGET /api/Home/videoNew [33m404[0m 2.724 ms - 156[0m
+[0mPOST /api/getCustomLink [33m404[0m 13.160 ms - 157[0m
+[0mGET /api/v1/member/kefu [33m404[0m 0.575 ms - 157[0m
+[0mGET /api/uploads/apimap [33m404[0m 0.538 ms - 157[0m
+[0mGET /api/config/getkefu [33m404[0m 0.724 ms - 157[0m
+[0mGET /api/site/getInfo.do [33m404[0m 0.511 ms - 158[0m
+[0mGET /api/message/webInfo [33m404[0m 0.683 ms - 158[0m
+[0mGET /api/index/webconfig [33m404[0m 0.714 ms - 158[0m
+[0mGET /api/index/getConfig [33m404[0m 0.676 ms - 158[0m
+[0mGET /api/index/grailindex [33m404[0m 0.676 ms - 159[0m
+[0mGET /api/shares/hqStrList [33m404[0m 0.590 ms - 159[0m
+[0mPOST /api/user/ismustmobile [33m404[0m 0.950 ms - 161[0m
+[0mGET /api/user/ismustmobile [33m404[0m 0.558 ms - 160[0m
+[0mPOST /api/user/ismustmobile [33m404[0m 0.805 ms - 161[0m
+[0mGET /api/banner?appKey=bxefdn [33m404[0m 0.834 ms - 149[0m
+[0mGET /api/Config/getShowConfig [33m404[0m 0.621 ms - 163[0m
+[0mGET /api/client/app/config.do [33m404[0m 0.643 ms - 163[0m
+[0mGET /api/home/customerService [33m404[0m 0.613 ms - 163[0m
+[0mGET /api/product/getPointStore [33m404[0m 0.842 ms - 164[0m
+[0mGET /api/currency/quotation_new [33m404[0m 0.812 ms - 165[0m
+[0mGET /api/vue/transaction/config [33m404[0m 0.669 ms - 165[0m
+[0mGET /api/predict-whole-panel.do [33m404[0m 1.121 ms - 165[0m
+[0mGET /api/common/menus?lang=zh-Hans [33m404[0m 0.788 ms - 155[0m
+[0mGET /api/appVersion?mobile_system=2 [33m404[0m 1.182 ms - 153[0m
+[0mGET /api/public/?service=Home.getConfig [33m404[0m 0.590 ms - 150[0m
+[0mGET /api/unSecurity/app/listAppVersionInfo [33m404[0m 0.642 ms - 176[0m
+[0mGET /api/stock/getSingleStock.do?code=002405 [33m404[0m 2.576 ms - 166[0m
+[0mPOST /api/system/systemConfigs/getCustomerServiceLink [33m404[0m 0.816 ms - 187[0m
+[0mGET /api/v/index/queryOfficePage?officeCode=customHomeLink [33m404[0m 0.642 ms - 166[0m
+[0mGET http://example.com/ [33m404[0m 2.861 ms - 139[0m
+[0mGET http://example.com/ [33m404[0m 0.862 ms - 139[0m
+[0mGET / [33m404[0m 0.856 ms - 139[0m
+[0mGET /favicon.ico [33m404[0m 0.860 ms - 150[0m
+[0mGET / [33m404[0m 0.899 ms - 139[0m
+[0mGET / [33m404[0m 0.812 ms - 139[0m
+[0mGET /manage/account/login [33m404[0m 0.807 ms - 159[0m
+[0mGET /admin/index.html [33m404[0m 0.875 ms - 155[0m
+[0mGET /index.html [33m404[0m 0.870 ms - 149[0m
+[0mGET /+CSCOE+/logon.html [33m404[0m 0.831 ms - 157[0m
+[0mGET /cgi-bin/login.cgi [33m404[0m 0.864 ms - 156[0m
+[0mGET /logon.htm [33m404[0m 0.788 ms - 148[0m
+[0mGET /login.jsp [33m404[0m 0.845 ms - 148[0m
+[0mGET /doc/index.html [33m404[0m 0.922 ms - 153[0m
+[0mGET / [33m404[0m 0.801 ms - 139[0m
+[0mGET / [33m404[0m 0.818 ms - 139[0m
+[0mGET / [33m404[0m 0.938 ms - 139[0m
+[0mGET / [33m404[0m 1.083 ms - 139[0m
+[0mGET / [33m404[0m 0.872 ms - 139[0m
+[0mGET / [33m404[0m 0.892 ms - 139[0m
+[0mGET / [33m404[0m 0.871 ms - 139[0m
+[0mGET /api/.env [33m404[0m 0.821 ms - 147[0m
+[0mPOST /api/.env [33m404[0m 1.818 ms - 148[0m
+[0mGET /api/index.php/v1/config/application?public=true [33m404[0m 0.739 ms - 174[0m

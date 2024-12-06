@@ -19,7 +19,7 @@ app.use(morgan('dev'));  //로깅용
 // CORS 설정
 app.use(
   cors({
-    origin: 'https://yanawa.shop',
+    origin:[ process.env.FROENT_URL,'https://yanawa.shop'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -57,7 +57,7 @@ app.set('trust proxy', 1);
 console.log('MongoDB URI:', process.env.MONGO_URI);
 //라우터 등록 
 const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);

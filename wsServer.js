@@ -25,7 +25,7 @@ let chatRooms = {};
 // MongoDB 연결 설정
 async function connectMongoDB() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/chat', {
+    await mongoose.connect(process.env.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
