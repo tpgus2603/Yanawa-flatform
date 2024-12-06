@@ -67,80 +67,100 @@ class ScheduleService {
 
     async updateSchedules(userId, updates, transaction = null) {
         const { originalTitle, title, is_fixed, time_indices } = updates;
-
-        // 기존 스케줄 조회
-        const existingSchedules = await Schedule.findAll({
-            where: {
-                user_id: userId,
-                title: originalTitle
-            },
-            transaction
-        });
-
-        if (existingSchedules.length === 0) {
-            throw new Error('Schedule not found');
-        }
-
-        const existingTimeIndices = existingSchedules.map(s => s.time_idx); // 기존 시간대
-        const toDelete = existingTimeIndices.filter(idx => !time_indices.includes(idx)); // 삭제할 시간대
-        const toAdd = time_indices.filter(idx => !existingTimeIndices.includes(idx)); // 추가할 시간대
         const t = transaction || await sequelize.transaction();
 
         try {
-            // 삭제
-            if (toDelete.length > 0) {
-                await Schedule.destroy({
-                    where: {
-                        user_id: userId,
-                        title: originalTitle,
-                        time_idx: {
-                            [Op.in]: toDelete
-                        }
-                    },
-                    transaction: t
-                });
-            }
-
-            // 제목, 고정/유동 업데이트
-            await Schedule.update(
-                {
-                    title,
-                    is_fixed
-                },
-                {
+            // 기존 스케줄 조회
+            const [existingSchedule, existingSchedules] = await Promise.all([
+                Schedule.findOne({
                     where: {
                         user_id: userId,
                         title: originalTitle
                     },
                     transaction: t
-                }
+                }),
+                Schedule.findAll({
+                    attributes: ['time_idx'],
+                    where: {
+                        user_id: userId,
+                        title: originalTitle
+                    },
+                    transaction: t
+                })
+            ]);
+
+            if (!existingSchedule) {
+                throw new Error('Schedule not found');
+            }
+
+            const existingTimeIndices = existingSchedules.map(s => s.time_idx);
+            const toDelete = existingTimeIndices.filter(idx => !time_indices.includes(idx));
+            const toAdd = time_indices.filter(idx => !existingTimeIndices.includes(idx));
+
+            // 벌크 연산
+            const operations = [];
+
+            // 삭제 연산
+            if (toDelete.length > 0) {
+                operations.push(
+                    Schedule.destroy({
+                        where: {
+                            user_id: userId,
+                            title: originalTitle,
+                            time_idx: {
+                                [Op.in]: toDelete
+                            }
+                        },
+                        transaction: t
+                    })
+                );
+            }
+
+            // 업데이트 연산
+            operations.push(
+                Schedule.update(
+                    { title, is_fixed },
+                    {
+                        where: {
+                            user_id: userId,
+                            title: originalTitle
+                        },
+                        transaction: t
+                    }
+                )
             );
 
-            // 새로운 time_indices 추가
+            // 생성 연산
             if (toAdd.length > 0) {
-                await Promise.all(
-                    toAdd.map(time_idx =>
-                        Schedule.create({
+                operations.push(
+                    Schedule.bulkCreate(
+                        toAdd.map(time_idx => ({
                             user_id: userId,
                             title,
                             time_idx,
                             is_fixed
-                        }, { transaction: t })
+                        })),
+                        {
+                            transaction: t,
+                            validate: true
+                        }
                     )
                 );
             }
+
+            await Promise.all(operations); // 병렬 처리
 
             if (!transaction) {
                 await t.commit();
             }
 
             return {
-                id: existingSchedules[0].id,
+                id: existingSchedule.id,
                 user_id: userId,
                 title,
                 is_fixed,
                 time_indices,
-                createdAt: existingSchedules[0].createdAt,
+                createdAt: existingSchedule.createdAt,
                 updatedAt: new Date()
             };
 
