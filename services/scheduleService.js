@@ -10,34 +10,46 @@ class ScheduleService {
      * @param {object} [transaction] - Sequelize 트랜잭션 객체 -> 미팅방에서 쓰기위해 트랜잭션을 넘겨받는걸 추가 
      */
     async createSchedules({ userId, title, is_fixed, time_indices }, transaction = null) {
-        // 중복 검사
-        for (const time_idx of time_indices) {
-            const overlap = await this.checkScheduleOverlap(userId, time_idx, transaction);
-            if (overlap) {
-                throw new Error(`Schedule overlaps at time_idx ${time_idx}`);
-            }
+        const overlaps = await Schedule.findAll({
+            where: {
+                user_id: userId,
+                time_idx: {
+                    [Op.in]: time_indices
+                }
+            },
+            transaction
+        });
+
+        if (overlaps.length > 0) {
+            throw new Error(`Schedule overlaps at time_idx ${overlaps[0].time_idx}`);
         }
 
-        const createdSchedules = await Promise.all(
-            time_indices.map(time_idx =>
-                Schedule.create({
-                    user_id: userId,
-                    title,
-                    time_idx,
-                    is_fixed
-                }, { transaction })
-            )
-        );
-
-        return {
-            id: createdSchedules[0].id,
+        const scheduleData = time_indices.map(time_idx => ({
             user_id: userId,
             title,
-            is_fixed,
-            time_indices,
-            createdAt: createdSchedules[0].createdAt,
-            updatedAt: createdSchedules[0].updatedAt
-        };
+            time_idx,
+            is_fixed
+        }));
+
+        try {
+            const createdSchedules = await Schedule.bulkCreate(scheduleData, {
+                transaction,
+                returning: true,
+                validate: true
+            });
+
+            return {
+                id: createdSchedules[0].id,
+                user_id: userId,
+                title,
+                is_fixed,
+                time_indices,
+                createdAt: createdSchedules[0].createdAt,
+                updatedAt: createdSchedules[0].updatedAt
+            };
+        } catch (error) {
+            throw new Error(`Failed to bulk create schedules: ${error.message}`);
+        }
     }
 
     async getAllSchedules(userId) {
@@ -157,25 +169,19 @@ class ScheduleService {
      */
     async getScheduleByTimeIdx(userId, time_idx) {
         // 해당 time_idx의 스케줄 찾기
-        const schedule = await Schedule.findOne({
-            where: { user_id: userId, time_idx }
-        });
-
-        if (!schedule) {
-            throw new Error('Schedule not found');
-        }
-
-        // 같은 제목의 모든 스케줄 찾기
-        const relatedSchedules = await Schedule.findAll({
+        const schedules = await Schedule.findAll({
             where: {
                 user_id: userId,
-                title: schedule.title,
-                is_fixed: schedule.is_fixed
+                title: {
+                    [Op.in]: sequelize.literal(
+                        `(SELECT title FROM Schedules WHERE user_id = ${userId} AND time_idx = ${time_idx})`
+                    )
+                }
             },
             order: [['time_idx', 'ASC']]
         });
 
-        return ScheduleResponseDTO.groupSchedules(relatedSchedules)[0];
+        return ScheduleResponseDTO.groupSchedules(schedules)[0];
     }
 
     async getAllSchedules(userId) {
