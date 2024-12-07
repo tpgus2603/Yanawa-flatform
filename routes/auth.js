@@ -5,7 +5,7 @@ const router = express.Router();
 
 // GET api/auth/login
 router.get('/login', (req, res, next) => {
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  passport.authenticate('google', { failureRedirect: `${process.env.FRONT_URL}/login` }),
 });
 router.get(
   '/google/callback',
