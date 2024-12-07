@@ -598,7 +598,10 @@ class MeetingService {
             });
             if (chatRoom) {
                 const user = await User.findByPk(userId);
-                chatRoom.participants = chatRoom.participants.filter(p => p !== user.name);
+                chatRoom.participants = chatRoom.participants.filter(p => p.name !== user.name);
+                chatRoom.isOnline.delete(user.name);
+                chatRoom.lastReadAt.delete(user.name);
+                chatRoom.lastReadLogId.delete(user.name);
                 await chatRoom.save();
             }
     

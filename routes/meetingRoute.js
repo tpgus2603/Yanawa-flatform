@@ -22,4 +22,10 @@ router.post('/:meetingId/join', MeetingController.joinMeeting);
 // 번개 모임 상세 조회
 router.get('/:meetingId', MeetingController.getMeetingDetail);
 
+// 번개 모임 탈퇴
+router.delete('/:meetingId/leave', MeetingController.leaveMeeting);
+
+// 내가 참여한 모임 목록 조회
+router.get('/my', MeetingController.getMyMeetings);
+
 module.exports = router;

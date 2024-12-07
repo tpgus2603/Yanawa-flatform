@@ -210,7 +210,7 @@ class FriendService {
                 }
             ],
             order: [['id', 'ASC']],
-            limit: limit + 1, // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
+            limit: limit + 1, 
             offset
         });
     
