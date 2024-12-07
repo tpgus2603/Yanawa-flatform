@@ -3,16 +3,21 @@ const passport = require('passport');
 
 const router = express.Router();
 
-// GET api/auth/login
-router.get('/login', 
-  passport.authenticate('google', { 
-    failureRedirect: `${process.env.FRONT_URL}/login` 
+// Google OAuth 로그인 라우터
+router.get(
+  '/login',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'], // 사용자 정보 요청을 위한 scope 
+    failureRedirect: `${process.env.FRONT_URL}/login`
   })
 );
 
+// Google OAuth 콜백 라우터
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/auth/login' }),
+  passport.authenticate('google', {
+    failureRedirect: '/auth/login'
+  }),
   (req, res) => {
     const redirectUrl = process.env.FRONT_URL;
     req.session.save((err) => {
@@ -24,7 +29,8 @@ router.get(
     });
   }
 );
-// GET api/auth/logout
+
+// 로그아웃 라우터
 router.get('/logout', (req, res) => {
   if (req.session) {
     req.session.destroy((err) => {
