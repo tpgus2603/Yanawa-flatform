@@ -116,20 +116,21 @@ class MeetingController {
             res.status(500).json({ error: err.message || '모임 상세 조회 실패' });
         }
     }
-    /*
-    Delete /api/meetings/:meetingId
-    */
-    async closeMeeting(req,res)
-    {
-    
+
+    /**
+     * 번개 모임 탈퇴
+     * DELETE /api/meeting/:meetingId/leave
+     */
+    async leaveMeeting(req, res) {
         const { meetingId } = req.params;
-        const userid=req.user.id;  
+        const userId = req.user.id;
+        
         try {
-            const meetingDetail = await MeetingService.leaveMeeting(meetingId,userId);
-            res.status(200).json('모임 삭제성공!');
+            await MeetingService.leaveMeeting(meetingId, userId);
+            res.status(200).json({ message: '모임 탈퇴 성공' }); 
         } catch (err) {
-            console.error('모임 삭제 오류', err);
-            res.status(500).json({ error: err.message || '모임삭제 실패' });
+            console.error('모임 탈퇴 오류:', err);
+            res.status(500).json({ error: err.message || '모임 탈퇴 실패' });
         }
     }
 
