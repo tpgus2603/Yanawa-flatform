@@ -2,10 +2,10 @@
 
 const express = require('express');
 const router = express.Router();
-// const { isLoggedIn } = require('../middlewares/auth');
+const { isLoggedIn } = require('../middlewares/auth');
 const MeetingController = require('../controllers/meetingController');
 
-// router.use(isLoggedIn);
+router.use(isLoggedIn);
 
 // 번개 모임 생성
 router.post('/', MeetingController.createMeeting);
@@ -24,5 +24,8 @@ router.get('/:meetingId', MeetingController.getMeetingDetail);
 
 // 번개 모임 탈퇴
 router.delete('/:meetingId/leave', MeetingController.leaveMeeting);
+
+// 내가 참여한 모임 목록 조회
+router.get('/my', MeetingController.getMyMeetings);
 
 module.exports = router;

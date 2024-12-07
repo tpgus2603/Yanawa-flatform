@@ -118,16 +118,47 @@ class MeetingController {
     }
 
     /**
+     * 내가 참여한 모임 목록 조회
+     * GET /api/meetings/my
+     */
+    async getMyMeetings(req, res) {
+        try {
+            const userId = req.user.id;
+            const page = parseInt(req.query.page) || 0;
+            const size = parseInt(req.query.size) || 20;
+
+            const meetings = await MeetingService.getMyMeetings(userId, {
+                limit: size,
+                offset: page * size
+            });
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    content: meetings.content,
+                    page: page,
+                    size: size,
+                    hasNext: meetings.hasNext
+                }
+            });
+        } catch (err) {
+            console.error('내 모임 목록 조회 오류:', err);
+            res.status(500).json({ error: err.message || '내 모임 목록 조회 실패' });
+        }
+    }
+
+
+    /**
      * 번개 모임 탈퇴
      * DELETE /api/meeting/:meetingId/leave
      */
     async leaveMeeting(req, res) {
         const { meetingId } = req.params;
         const userId = req.user.id;
-        
+
         try {
             await MeetingService.leaveMeeting(meetingId, userId);
-            res.status(200).json({ message: '모임 탈퇴 성공' }); 
+            res.status(200).json({ message: '모임 탈퇴 성공' });
         } catch (err) {
             console.error('모임 탈퇴 오류:', err);
             res.status(500).json({ error: err.message || '모임 탈퇴 실패' });
