@@ -36,7 +36,7 @@ User.hasMany(Friend, {
 Meeting.belongsTo(User, {
   foreignKey: 'created_by',
   as: 'creator',
-  onDelete: 'SET NULL', // Meetings might persist even if the creator is deleted
+  onDelete: 'SET NULL', 
 });
 User.hasMany(Meeting, {
   foreignKey: 'created_by',

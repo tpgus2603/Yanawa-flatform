@@ -16,13 +16,14 @@ const app = express();
 
 
 app.use(morgan('dev'));  //로깅용
-// CORS 설정
+
+// CORS 설정 (로컬 환경용)
 app.use(
   cors({
     origin:[ process.env.FROENT_URL,'https://yanawa.shop'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: true, 
   })
 );
 // 
@@ -59,10 +60,10 @@ console.log('MongoDB URI:', process.env.MONGO_URI);
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
-const scheduleRoutes = require('./routes/schedule');
+const scheduleRoutes = require('./routes/scheduleRoute');
 app.use('/api/schedule', scheduleRoutes);
 
-const friendRoutes = require('./routes/friend');
+const friendRoutes = require('./routes/friendRoute');
 app.use('/api/friend', friendRoutes);
 
 const meetingRoutes = require('./routes/meetingRoute');
@@ -74,7 +75,7 @@ app.use('/api/chat', chatRoutes);
 const memberRoutes = require('./routes/memberRoute');
 app.use('/api/member', memberRoutes);
 
-const sessionRouter = require('./routes/session');
+const sessionRouter = require('./routes/sessionRoute');
 app.use('/api/session', sessionRouter);
 
 // 스케줄 클리너 초기화
