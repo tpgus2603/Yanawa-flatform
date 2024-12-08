@@ -27,11 +27,22 @@ class ScheduleService {
         const scheduleData = time_indices.map(time_idx => ({
             user_id: userId,
             title,
-            time_idx,
+            time_idx: parseInt(time_idx, 10),
             is_fixed
         }));
 
         try {
+            if (!userId || !title || !time_indices) {
+                throw new Error('Required parameters missing');
+            }
+    
+            console.log('Creating schedule with data:', {
+                userId,
+                title,
+                is_fixed,
+                time_indices
+            });
+
             const createdSchedules = await Schedule.bulkCreate(scheduleData, {
                 transaction,
                 returning: true,
