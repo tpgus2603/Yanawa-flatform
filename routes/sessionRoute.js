@@ -9,10 +9,7 @@ router.get('/info', (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.set('Pragma', 'no-cache');        
     return res.status(200).json({
-      user: {
-        email,
-        name,
-      },
+      email,name
     });
   }
   // 세션이 만료되었거나 사용자 정보가 없는 경우
