@@ -55,7 +55,7 @@ app.use(passport.session());
 app.use(flash());
 
 
-app.set('trust proxy', 1);
+//app.set('trust proxy', 1);
 console.log('MongoDB URI:', process.env.MONGO_URI);
 //라우터 등록 
 const authRoutes = require('./routes/auth');

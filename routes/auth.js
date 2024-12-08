@@ -12,11 +12,10 @@ router.get(
   })
 );
 
-// Google OAuth 콜백 라우터
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: '/auth/login'
+    failureRedirect: `${process.env.FRONT_URL}/login` // 수정된 부분
   }),
   (req, res) => {
     const redirectUrl = process.env.FRONT_URL;
