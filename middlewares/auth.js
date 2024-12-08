@@ -1,6 +1,5 @@
 // middlewares/auth.js
 exports.isLoggedIn = (req, res, next) => { // 로그인된 사용자만 접근 허용
-exports.isLoggedIn = (req, res, next) => { // 로그인된 사용자만 접근 허용
   if (req.isAuthenticated()) {
     return next();
   }
