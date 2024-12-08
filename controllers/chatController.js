@@ -92,3 +92,66 @@ exports.updateStatusAndLogId = async (req, res) => {
     res.status(500).json({ error: 'Failed to update user status and lastReadLogId' });
   }
 };
+
+// 공지 등록
+exports.addNotice = async (req, res) => {
+  const { chatRoomId } = req.params;
+  const { sender, message } = req.body;
+
+  try {
+    const notice = await chatService.addNotice(chatRoomId, sender, message);
+    res.status(200).json(notice);
+  } catch (error) {
+    console.error('Error adding notice:', error.message);
+    res.status(500).json({ error: 'Failed to add notice' });
+  }
+};
+
+// 최신 공지 조회
+exports.getLatestNotice = async (req, res) => {
+  const { chatRoomId } = req.params;
+
+  try {
+    const latestNotice = await chatService.getLatestNotice(chatRoomId);
+    if (latestNotice) {
+      res.status(200).json(latestNotice);
+    } else {
+      res.status(404).json({ message: 'No notices found' });
+    }
+  } catch (error) {
+    console.error('Error fetching latest notice:', error.message);
+    res.status(500).json({ error: 'Failed to fetch latest notice' });
+  }
+};
+
+// 공지 전체 조회
+exports.getAllNotices = async (req, res) => {
+  const { chatRoomId } = req.params;
+
+  try {
+    const notices = await chatService.getAllNotices(chatRoomId);
+    console.log(`[getAllNotices] Notices for chatRoomId ${chatRoomId}:`, notices); // 로그 추가
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error('Error fetching all notices:', error.message);
+    res.status(500).json({ error: 'Failed to fetch all notices' });
+  }
+};
+
+// 공지사항 상세 조회
+exports.getNoticeById = async (req, res) => {
+  const { chatRoomId, noticeId } = req.params;
+
+  try {
+    const notice = await chatService.getNoticeById(chatRoomId, noticeId);
+
+    if (!notice) {
+      return res.status(404).json({ error: 'Notice not found' });
+    }
+
+    res.status(200).json(notice);
+  } catch (error) {
+    console.error('Error fetching notice by ID:', error.message);
+    res.status(500).json({ error: 'Failed to fetch notice by ID' });
+  }
+};

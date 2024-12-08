@@ -1,16 +1,14 @@
 // test/scheduleService.test.js
-const sequelize = require('../config/sequelize'); // 실제 경로에 맞게 수정
+const sequelize = require('../config/sequelize'); 
 const { Schedule, User } = require('../models');
-const ScheduleService = require('../services/scheduleService'); // Uppercase 'S'로 가져오기
+const ScheduleService = require('../services/scheduleService'); 
 const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
 
 beforeAll(async () => {
-    // 테스트 스위트가 시작되기 전에 데이터베이스를 동기화합니다.
     await sequelize.sync({ force: true });
 });
 
 beforeEach(async () => {
-    // 각 테스트가 시작되기 전에 기존 데이터를 삭제합니다.
     await Schedule.destroy({ where: {} });
     await User.destroy({ where: {} });
 

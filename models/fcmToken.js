@@ -1,3 +1,4 @@
+//models/friend.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 const User = require('./user'); // 올바른 경로 확인

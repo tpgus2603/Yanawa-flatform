@@ -1,7 +1,5 @@
-// schemas/chatRooms.js
 const mongoose = require('mongoose');
 
-// MongoDB 채팅방 스키마 수정 (FCM 토큰을 배열로 관리)
 const chatRoomsSchema = new mongoose.Schema({
   chatRoomId: { type: String, required: true, unique: true },
   chatRoomName: { type: String, required: true },
@@ -18,6 +16,11 @@ const chatRoomsSchema = new mongoose.Schema({
   lastReadAt: { type: Map, of: Date },
   lastReadLogId: { type: Map, of: String },
   isOnline: { type: Map, of: Boolean },
+  notices: [{ 
+    sender: { type: String },
+    message: { type: String },
+    timestamp: { type: Date, default: Date.now }, 
+  }]
 }, { collection: 'chatrooms' });
 
 const ChatRooms = mongoose.models.ChatRooms || mongoose.model('ChatRooms', chatRoomsSchema);

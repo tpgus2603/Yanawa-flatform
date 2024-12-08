@@ -1,7 +1,4 @@
 
-// const { Meeting, MeetingParticipant, User, Schedule } = require('../models');
-// const ChatRoom = require('../models/chatRooms');
-// const FcmToken = require('../models/fcmToken');
 // services/meetingService.js
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
@@ -121,20 +118,16 @@ class MeetingService {
                 { transaction }
             );
 
-            // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
-            const events = [];
-            for (let idx = time_idx_start; idx <= time_idx_end; idx++) {
-                events.push({ time_idx: idx });
-            }
-            await ScheduleService.createSchedules(
-                {
-                    userId: created_by,
-                    title: `번개 모임: ${title}`,
-                    is_fixed: false,
-                    events: events,
-                },
-                transaction
+            const time_indices = Array.from(
+                { length: time_idx_end - time_idx_start + 1 },
+                (_, i) => time_idx_start + i
             );
+            await ScheduleService.createSchedules({
+                userId: created_by,
+                title: `번개 모임: ${title}`,
+                is_fixed: false,
+                time_indices: time_indices,
+            }, transaction);
 
             // 친구 초대 로직 호출
             const invitedFriendIds = await this.sendInvites({
@@ -267,24 +260,17 @@ class MeetingService {
             { transaction }
           );
 
-          // 스케줄 생성 (모임 시간 범위 내 모든 time_idx에 대해 생성)
-          const events = [];
-          for (
-            let idx = meeting.time_idx_start;
-            idx <= meeting.time_idx_end;
-            idx++
-          ) {
-            events.push({ time_idx: idx });
-          }
-          await ScheduleService.createSchedules(
-            {
-              userId: userId,
-              title: `번개 모임: ${meeting.title}`,
-              is_fixed: false,
-              events: events,
-            },
-            transaction
-          );
+        const time_indices = Array.from(
+            { length: meeting.time_idx_end - meeting.time_idx_start + 1 },
+            (_, i) => meeting.time_idx_start + i
+        );
+        
+        await ScheduleService.createSchedules({
+            userId: userId,
+            title: `번개 모임: ${meeting.title}`,
+            is_fixed: false,
+            time_indices: time_indices,
+        }, transaction);
 
           // 채팅방 참가 (MongoDB)
           const user = await User.findOne({
@@ -328,130 +314,111 @@ class MeetingService {
     
     async getMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
-
-        const meetings = await Meeting.findAll({
-            attributes: [
-                'id',
-                'title',
-                'description',
-                'time_idx_start',
-                'time_idx_end',
-                'location',
-                'time_idx_deadline',
-                'type',
-                'max_num',
-                'cur_num',
-            ],
-            include: [
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    required: false, 
-                    attributes: [],
-                },
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                }
-            ],
-            order: [['createdAt', 'DESC']],
-            offset
-        });
     
-        const hasNext = meetings.length > limit;
-        const content = await Promise.all(
-            meetings.slice(0, limit).map(async (meeting) => {
-                const isParticipant = await MeetingParticipant.findOne({
-                    where: {
-                        meeting_id: meeting.id,
-                        user_id: userId
+        try {
+            const meetings = await Meeting.findAll({
+                attributes: [
+                    'id', 'title', 'description',
+                    'time_idx_start', 'time_idx_end',
+                    'location', 'time_idx_deadline',
+                    'type', 'max_num', 'cur_num',
+                    'created_at'
+                ],
+                include: [
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['name'],
+                        required: false
                     }
-                });
+                ],
+                order: [['created_at', 'DESC']],
+                limit: limit + 1,
+                offset,
+                distinct: true
+            });
     
-                const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-                    userId,
-                    meeting.time_idx_start,
-                    meeting.time_idx_end
-                );
+            const hasNext = meetings.length > limit;
+            const content = await Promise.all(
+                meetings.slice(0, limit).map(async (meeting) => {
+                    const isParticipant = await MeetingParticipant.findOne({
+                        where: {
+                            meeting_id: meeting.id,
+                            user_id: userId
+                        }
+                    });
     
-                const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-                return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
-            })
-        );
+                    const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                        userId,
+                        meeting.time_idx_start,
+                        meeting.time_idx_end
+                    );
     
-        return {
-            content,
-            hasNext
-        };
+                    return new MeetingResponseDTO(
+                        meeting,
+                        !!isParticipant,
+                        hasConflict,
+                        meeting.creator?.name || 'Unknown'
+                    );
+                })
+            );
+    
+            return { content, hasNext };
+        } catch (error) {
+            console.error('getMeetings error:', error);
+            throw new Error('Failed to fetch meetings');
+        }
     }
 
     async getMyMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
     
-        const meetings = await Meeting.findAll({
-            attributes: [
-                'id',
-                'title',
-                'description',
-                'time_idx_start',
-                'time_idx_end',
-                'location',
-                'time_idx_deadline',
-                'type',
-                'max_num',
-                'cur_num',
-            ],
-            include: [
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    where: { user_id: userId }, 
-                    attributes: [],
-                },
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                }
-            ],
-            where: {
-                [Op.or]: [
-                    { created_by: userId },  
-                    { '$participants.user_id$': userId }  
-                ]
-            },
-            order: [['createdAt', 'DESC']],
-            offset
-        });
-    
-        const hasNext = meetings.length > limit;
-        const content = await Promise.all(
-            meetings.slice(0, limit).map(async (meeting) => {
-                const isParticipant = await MeetingParticipant.findOne({
-                    where: {
-                        meeting_id: meeting.id,
-                        user_id: userId
+        try {
+            const meetings = await Meeting.findAll({
+                attributes: [
+                    'id', 'title', 'description',
+                    'time_idx_start', 'time_idx_end',
+                    'location', 'time_idx_deadline',
+                    'type', 'max_num', 'cur_num',
+                    'created_at'
+                ],
+                include: [
+                    {
+                        model: MeetingParticipant,
+                        as: 'participants',
+                        where: { user_id: userId },
+                        required: true
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['name'],
+                        required: false
                     }
-                });
+                ],
+                order: [['created_at', 'DESC']],
+                limit: limit + 1,
+                offset,
+                distinct: true
+            });
     
-                const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-                    userId,
-                    meeting.time_idx_start,
-                    meeting.time_idx_end
+            const hasNext = meetings.length > limit;
+            const content = meetings.slice(0, limit).map(meeting => {
+                return new MeetingResponseDTO(
+                    meeting,
+                    true,  // 참여자로 조회했으므로 항상 true
+                    false, // 이미 참여 중인 미팅이므로 충돌 체크 불필요
+                    meeting.creator?.name || 'Unknown'
                 );
+            });
     
-                const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-                return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
-            })
-        );
-    
-        return {
-            content,
-            hasNext
-        };
+            return { content, hasNext };
+        } catch (error) {
+            console.error('getMyMeetings error:', error);
+            throw new Error('Failed to fetch my meetings');
+        }
     }
-
+    
     async getMeetingDetail(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
@@ -612,7 +579,10 @@ class MeetingService {
             });
             if (chatRoom) {
                 const user = await User.findByPk(userId);
-                chatRoom.participants = chatRoom.participants.filter(p => p !== user.name);
+                chatRoom.participants = chatRoom.participants.filter(p => p.name !== user.name);
+                chatRoom.isOnline.delete(user.name);
+                chatRoom.lastReadAt.delete(user.name);
+                chatRoom.lastReadLogId.delete(user.name);
                 await chatRoom.save();
             }
     

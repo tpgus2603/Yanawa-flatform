@@ -13,27 +13,28 @@ class ScheduleRequestDTO {
             schema = Joi.object({
                 title: Joi.string().min(1).max(255).required(),
                 is_fixed: Joi.boolean().required(),
-                events: Joi.array().items(
-                    Joi.object({
-                        time_idx: Joi.number().integer().min(0).max(671).required(),
-                    })
-                ).min(1).required()
+                time_indices: Joi.array()
+                    .items(Joi.number().integer().min(0).max(671))
+                    .min(1)
+                    .required()
             });
         } else if (type === 'bulk_update') {
             schema = Joi.object({
-                updates: Joi.array().items(
-                    Joi.object({
-                        time_idx: Joi.number().integer().min(0).max(671).required(),
-                        title: Joi.string().min(1).max(255).optional(),
-                        is_fixed: Joi.boolean().optional(),
-                    })
-                ).min(1).required()
+                originalTitle: Joi.string().min(1).max(255).required(),
+                title: Joi.string().min(1).max(255).required(),
+                is_fixed: Joi.boolean().required(),
+                time_indices: Joi.array()
+                    .items(Joi.number().integer().min(0).max(671))
+                    .min(1)
+                    .required()
             });
         } else if (type === 'bulk_delete') {
             schema = Joi.object({
-                time_idxs: Joi.array().items(
-                    Joi.number().integer().min(0).max(671).required()
-                ).min(1).required()
+                title: Joi.string().min(1).max(255).required()
+            });
+        } else if (type === 'get_by_time_idx') {
+            schema = Joi.object({
+                time_idx: Joi.number().integer().min(0).max(671).required()
             });
         }
 
