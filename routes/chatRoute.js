@@ -10,5 +10,9 @@ router.get('/unread-messages/:nickname', chatController.getUnreadMessages);
 router.get('/unread-count/:chatRoomId', chatController.getUnreadCount);
 router.post('/update-status-and-logid', chatController.updateStatusAndLogId);
 router.post('/update-read-log-id', chatController.updateReadLogId);
+router.post('/:chatRoomId/notices', chatController.addNotice); 
+router.get('/:chatRoomId/notices/latest', chatController.getLatestNotice); 
+router.get('/:chatRoomId/notices', chatController.getAllNotices);
+router.get('/:chatRoomId/notices/:noticeId', chatController.getNoticeById);
 
 module.exports = router;
