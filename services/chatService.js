@@ -209,6 +209,87 @@ class ChatService {
     }
   }
 
+  // 공지사항 추가
+  async addNotice(chatRoomId, sender, message) {
+    try {
+      const newNotice = {
+        sender,
+        message,
+        timestamp: new Date(),
+      };
+
+      const updatedChatRoom = await ChatRooms.findOneAndUpdate(
+        { chatRoomId },
+        { $push: { notices: newNotice } }, // 공지사항 배열에 추가
+        { new: true }
+      );
+
+      if (!updatedChatRoom) {
+        throw new Error('Chat room not found');
+      }
+
+      return newNotice;
+    } catch (error) {
+      console.error('Error adding notice:', error.message);
+      throw new Error('Failed to add notice');
+    }
+  }
+
+  // 최신 공지사항 조회
+  async getLatestNotice(chatRoomId) {
+    try {
+      const chatRoom = await ChatRooms.findOne(
+        { chatRoomId },
+        { notices: { $slice: -1 } } // 최신 공지 1개만 가져오기
+      );
+
+      if (!chatRoom || chatRoom.notices.length === 0) {
+        return null;
+      }
+
+      return chatRoom.notices[0];
+    } catch (error) {
+      console.error('Error fetching latest notice:', error.message);
+      throw new Error('Failed to fetch latest notice');
+    }
+  }
+
+  // 공지사항 전체 조회
+  async getAllNotices(chatRoomId) {
+    try {
+      const chatRoom = await ChatRooms.findOne({ chatRoomId }, { notices: 1 });
+
+      if (!chatRoom) {
+        throw new Error('Chat room not found');
+      }
+
+      return chatRoom.notices;
+    } catch (error) {
+      console.error('Error fetching all notices:', error.message);
+      throw new Error('Failed to fetch all notices');
+    }
+  }
+
+  // 공지사항 상세 조회
+  async getNoticeById(chatRoomId, noticeId) {
+    try {
+      const chatRoom = await ChatRooms.findOne({ chatRoomId });
+      if (!chatRoom) {
+        throw new Error('Chat room not found');
+      }
+
+      const notice = chatRoom.notices.find(notice => notice._id.toString() === noticeId);
+      if (!notice) {
+        throw new Error('Notice not found');
+      }
+
+      return notice;
+    } catch (error) {
+      console.error('Error in getNoticeById:', error.message);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = new ChatService();
