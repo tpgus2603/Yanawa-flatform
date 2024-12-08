@@ -54,7 +54,7 @@ async function setupRabbitMQ() {
     amqpChannel = await amqpConnection.createChannel();
     console.log('RabbitMQ connection established');
   } catch (err) {
-    logError('RabbitMQ Setup', err);
+    console.error('RabbitMQ Setup', err);
     process.exit(1);
   }
 }
