@@ -16,29 +16,36 @@ const app = express();
 
 
 app.use(morgan('dev'));  //로깅용
-// CORS 설정
+
+// CORS 설정 (로컬 환경용)
 app.use(
   cors({
-    origin: 'http://localhost:3000', 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: process.env.FRONT_URL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: true, 
   })
 );
 
+// 세션 설정 (로컬 테스트용)
+app.use(
+  session({
+    secret: 'your-secret-key', 
+    resave: false,
+    saveUninitialized: false,
+    rolling: true, 
+    cookie: {
+      httpOnly: true, 
+      secure: false, // HTTPS가 아닌 환경에서는 false로 설정
+      maxAge: 60 * 60 * 1000, 
+      sameSite: 'lax', 
+    },
+  })
+);
 
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// 세션 설정
-app.use(
-  session({
-    secret: 'your_session_secret', 
-    resave: false,
-    saveUninitialized: false,
-  })
-);
 
 // Passport 초기화 및 세션 연결
 app.use(passport.initialize());
@@ -46,10 +53,13 @@ app.use(passport.session());
 
 
 app.use(flash());
+
+
+app.set('trust proxy', 1);
 console.log('MongoDB URI:', process.env.MONGO_URI);
 //라우터 등록 
 const authRoutes = require('./routes/auth');
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 const scheduleRoutes = require('./routes/schedule');
 app.use('/api/schedule', scheduleRoutes);
@@ -65,6 +75,9 @@ app.use('/api/chat', chatRoutes);
 
 const memberRoutes = require('./routes/memberRoute');
 app.use('/api/member', memberRoutes);
+
+const sessionRouter = require('./routes/session');
+app.use('/api/session', sessionRouter);
 
 // 스케줄 클리너 초기화
 initScheduleCleaner();
