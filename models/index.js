@@ -29,6 +29,9 @@ User.hasMany(MeetingParticipant, { foreignKey: 'user_id', as: 'meetingParticipat
 Schedule.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(Schedule, { foreignKey: 'user_id', as: 'schedules' });
 
+FcmToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(FcmToken, { foreignKey: 'userId', as: 'fcmTokenList' });
+
 Invite.belongsTo(Meeting, { foreignKey: 'meeting_id', as: 'meeting' });
 Invite.belongsTo(User, { foreignKey: 'inviter_id', as: 'inviter' }); // 초대한 사용자
 Invite.belongsTo(User, { foreignKey: 'invitee_id', as: 'invitee' }); // 초대받은 사용자
