@@ -12,7 +12,7 @@ class friendController {
     async sendFriendRequest(req, res) {
         try {
             return await performanceMonitor.measureAsync('sendFriendRequest', async () => {
-                const email  = req.body;
+                const { email }  = req.body;
                 const userId = req.user.id;
 
                 if (!userId || !email) {
@@ -162,7 +162,9 @@ class friendController {
 
                 return res.status(200).json({
                     success: true,
-                    data: friends
+                    data: {
+                        ...friends
+                    }
                 });
             });
         } catch (error) {
