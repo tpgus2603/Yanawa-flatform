@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const amqp = require('amqplib'); // RabbitMQ 연결
-const ChatRoom = require('./schemas/ChatRooms');
+const ChatRoom = require('./schemas/chatRooms');
 
 // .env 파일 로드
 dotenv.config();
