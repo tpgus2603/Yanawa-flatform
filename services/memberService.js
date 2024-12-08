@@ -25,7 +25,7 @@ class MemberService {
     }
 
     // 3. MongoDB에서 관련 채팅방의 FCM 토큰 업데이트
-    const existingChatRooms = await ChatRoom.find({ "participants.name": user.name });
+    const existingChatRooms = await ChatRooms.find({ "participants.name": user.name });
     for (const room of existingChatRooms) {
       room.participants = room.participants.map((participant) => {
         if (participant.name === user.name) {
