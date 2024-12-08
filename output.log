@@ -1,0 +1,288 @@
+MongoDB URI: mongodb+srv://admin:lim1234!!@goodmeeting.vkniz.mongodb.net/
+(node:212097) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:212097) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+✅ MongoDB 연결 성공
+Rdb데이터베이스 연결 성공.
+모든 모델이 성공적으로 동기화되었습니다.
+Server is running on 8080
+[0mGET /api/session/info [33m401[0m 7.235 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.572 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.286 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.126 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.154 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.926 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 2.076 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.024 ms - 76[0m
+[0mGET / [33m404[0m 2.809 ms - 139[0m
+[0mPOST /sdk [33m404[0m 2.633 ms - 143[0m
+[0mGET /nmaplowercheck1733630009 [33m404[0m 0.957 ms - 163[0m
+[0mGET / [33m404[0m 0.955 ms - 139[0m
+[0mGET /HNAP1 [33m404[0m 1.213 ms - 144[0m
+[0mGET /evox/about [33m404[0m 1.007 ms - 149[0m
+[0mGET / [33m404[0m 1.171 ms - 139[0m
+[0mGET / [33m404[0m 0.956 ms - 139[0m
+[0mGET /api/session/info [33m401[0m 0.914 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.419 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.736 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 3.018 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0Y8pXOIF2Ju3xckjh10Sjm1Kd0dcZycXQPzTOCxZrVv3oJM7H1v4TJfTlwRFxSDUw&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 567.800 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 8.998 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 15.228 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 4.820 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.144 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.160 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0aSNOTTxPm0d8V-mSO7PuFRiGZkFv1WWgoTGVqN41uFAQz8PupxFUtoSmm0ei6N1Q&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 388.373 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.914 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 4.398 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.161 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 1.117 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.137 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0bAWi6c7Y3IU6J6T4H5syJLynGlz8b0hEEMfcRCtXOzzE0Z_k9rNT2L2IV24m4Qbg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 418.058 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 4.195 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 17.752 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 5.411 ms - 60[0m
+[0mGET /api/auth/login [36m302[0m 4.906 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0ZwocNVsHrI0WcG2DfMTBOziAdI5W13EEEqAxqK0GZkt9SYgmlB1YVor1Vd10yhOA&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 445.216 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 5.122 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.660 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.893 ms - 60[0m
+[0mGET /api/auth/login [36m302[0m 52.638 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0btwgAZvNqTiVMI1FzYcMyJpsq8zjkKCJWb86vQYUXKSpXG1nnJGdWjoJFSJ6ZIAw&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 463.694 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 6.067 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 15.746 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 3.721 ms - 60[0m
+[0mGET /api/session/info [33m401[0m 0.880 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.871 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.936 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0aJ-WUyPAzU9TgwB3O4zrvADfrXVvIj7TZkKvtrnnYhpAlYTEfW3F_kLg1fwOBIpw&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 420.759 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.693 ms - 60[0m
+[0mGET /api/session/info [33m401[0m 0.963 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.876 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.904 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.898 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.956 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0YORfunrW6DJxJDtYvArHupwZYA_YXrpxZ-ucXSoB7ablLuwez2PrdwMyDACWTfrg&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 405.688 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.814 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 15.145 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.060 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.116 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0at8xXw-_yVufE61kassBTRFn4ybVl2gUfWoEVEh4qMv1pV1_C3-tIXH_OVtqccXA&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 416.504 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.844 ms - 60[0m
+[0mGET /api/session/info [33m401[0m 1.087 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.899 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.909 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0ayNExQE74cwz6uRTNs-Cl1t7nizv7EppTOoCMHdWhcmXC87ugbLXufp-YwfkKRCQ&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 447.632 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 7.614 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 11.394 ms - 40[0m
+Performance Measurement - getAllSchedules: 7.46108603477478ms
+[0mPOST /api/schedule [32m201[0m 54.333 ms - 217[0m
+Performance Measurement - createSchedule: 30.060553014278412ms
+[0mGET /api/schedule/all [32m200[0m 9.091 ms - 220[0m
+Performance Measurement - getAllSchedules: 4.380231022834778ms
+[0mGET /api/session/info [32m200[0m 4.019 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 15.551 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.339 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 6.990 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.459 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 5.760 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 14.888 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.146 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.211 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0ZdKVh0qL70I2shnUMx3d0bLsh0Ra1X-abqrZPtuPSHuLd7rt-MJwSdn5HQAvYPGg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 436.641 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.629 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 3.931 ms - 41[0m
+[0mGET /api/schedule/all [33m401[0m 1.054 ms - 44[0m
+[0mGET /api/session/info [33m401[0m 1.896 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.777 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.908 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0ZCNp4N4szbUeXZ2lUSJCQxpMLt8eiqkPAjhEoU9PGzn5zCYFI1CgifDv2hyISYGg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=1&hd=ajou.ac.kr&prompt=none [36m302[0m 481.904 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.830 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.419 ms - 40[0m
+Performance Measurement - getAllSchedules: 3.0510510206222534ms
+[0mGET /api/session/info [33m401[0m 0.905 ms - 76[0m
+[0mGET /api/schedule/all [33m401[0m 0.796 ms - 44[0m
+[0mGET /api/session/info [33m401[0m 0.844 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.910 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0a7Trsso_Jp5vPrjVTErVMUoTS_hKhC3_yBILjE1k8rlhD-Av_WDxRh-DenfkBozg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=3&hd=ajou.ac.kr&prompt=none [36m302[0m 455.286 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 4.353 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.417 ms - 40[0m
+Performance Measurement - getAllSchedules: 2.9196969866752625ms
+[0mGET /api/schedule/all [36m304[0m 56.513 ms - -[0m
+Performance Measurement - getAllSchedules: 3.0346270203590393ms
+[0mGET /api/session/info [32m200[0m 49.415 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 5.237 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.066 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.235 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0b5pX-wafAWt3GJaOQ0MuV8pxFpXzch7-iKJykw90KS3bg6rGS6c0jL_oCm0kHmfQ&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=1&hd=ajou.ac.kr&prompt=none [36m302[0m 452.374 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 4.040 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 9.584 ms - -[0m
+Performance Measurement - getAllSchedules: 3.8280670046806335ms
+[0mPOST /api/schedule [32m201[0m 68.289 ms - 252[0m
+Performance Measurement - createSchedule: 17.49489998817444ms
+[0mPUT /api/schedule [32m200[0m 45.097 ms - 245[0m
+Performance Measurement - updateSchedules: 30.391826033592224ms
+[0mGET /api/schedule/all [36m304[0m 53.317 ms - -[0m
+Performance Measurement - getAllSchedules: 3.174045979976654ms
+[0mGET /api/session/info [32m200[0m 3.974 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 79.820 ms - -[0m
+Performance Measurement - getAllSchedules: 2.95797199010849ms
+[0mGET /api/schedule/all [36m304[0m 20.604 ms - -[0m
+Performance Measurement - getAllSchedules: 3.0838510394096375ms
+[0mGET /api/schedule/all [36m304[0m 17.032 ms - -[0m
+Performance Measurement - getAllSchedules: 2.8636720180511475ms
+[0mGET /api/session/info [32m200[0m 51.753 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 15.941 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 17.499 ms - -[0m
+Performance Measurement - getAllSchedules: 2.9681079983711243ms
+[0mGET /api/session/info [33m401[0m 1.186 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.855 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.895 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0Y7dXShRIVbgpwaSHziVczqtPoIhuOwyKJCOvJ_dIZDhiumR1rom85By8WaxxjpWg&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 435.368 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 5.680 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.928 ms - 220[0m
+Performance Measurement - getAllSchedules: 3.3638980388641357ms
+[0mGET /api/session/info [32m200[0m 3.905 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.618 ms - 220[0m
+Performance Measurement - getAllSchedules: 3.098719000816345ms
+[0mGET /api/session/info [32m200[0m 4.208 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.312 ms - 220[0m
+Performance Measurement - getAllSchedules: 3.0304319858551025ms
+[0mGET /api/session/info [32m200[0m 4.133 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 16.818 ms - -[0m
+Performance Measurement - getAllSchedules: 2.7342900037765503ms
+[0mGET /api/session/info [32m200[0m 3.863 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 5.731 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 8.387 ms - -[0m
+Performance Measurement - getAllSchedules: 4.900808036327362ms
+[0mGET /api/session/info [32m200[0m 3.961 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 53.173 ms - -[0m
+Performance Measurement - getAllSchedules: 4.181941032409668ms
+[0mGET /api/session/info [32m200[0m 16.906 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.159 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 3.919 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 3.858 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 3.870 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 1.174 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 1.067 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0ZFplLpLXFzjTreoRr9XOFIdylMGvmTIJ9Z-8W3v8J-PXsC1WR3mrhEDMP8u8ISwg&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&hd=ajou.ac.kr&prompt=none [36m302[0m 456.648 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.714 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 8.904 ms - -[0m
+Performance Measurement - getAllSchedules: 3.3655150532722473ms
+[0mGET /api/session/info [32m200[0m 3.904 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 6.538 ms - -[0m
+Performance Measurement - getAllSchedules: 3.2424970269203186ms
+[0mGET /api/session/info [32m200[0m 4.546 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 14.706 ms - 60[0m
+[0mGET /api/auth/logout [36m302[0m 3.760 ms - 41[0m
+[0mGET /api/auth/login [36m302[0m 1.096 ms - 0[0m
+[0mGET /api/auth/google/callback?code=4%2F0AeanS0a9isaZiqiZyAFoW3OCrs683FSO5wYZOZICruNlDnpbD6zQOwT9wly7fZ3akJHglQ&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=3&hd=ajou.ac.kr&prompt=none [36m302[0m 416.843 ms - 48[0m
+[0mGET /api/session/info [32m200[0m 3.936 ms - 60[0m
+[0mGET /api/schedule/all [36m304[0m 6.114 ms - -[0m
+Performance Measurement - getAllSchedules: 2.7020570039749146ms
+[0mPOST /api/schedule [32m201[0m 32.875 ms - 238[0m
+Performance Measurement - createSchedule: 17.89035999774933ms
+[0mPOST /api/schedule [32m201[0m 27.971 ms - 251[0m
+Performance Measurement - createSchedule: 14.455415964126587ms
+[0mPOST /api/schedule [32m201[0m 24.014 ms - 277[0m
+Performance Measurement - createSchedule: 10.122812986373901ms
+[0mDELETE /api/schedule [32m200[0m 28.079 ms - 84[0m
+Performance Measurement - deleteSchedules: 13.639528036117554ms
+[0mGET /api/schedule/all [32m200[0m 6.512 ms - 456[0m
+Performance Measurement - getAllSchedules: 3.6543020009994507ms
+[0mPOST /api/schedule [32m201[0m 26.599 ms - 237[0m
+Performance Measurement - createSchedule: 12.827956020832062ms
+[0mGET /api/session/info [32m200[0m 51.064 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 16.479 ms - 657[0m
+Performance Measurement - getAllSchedules: 3.5523930191993713ms
+[0mGET /api/session/info [32m200[0m 21.419 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 26.999 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 34.768 ms - 2[0m
+[0mGET /api/session/info [32m200[0m 4.844 ms - 60[0m
+[0mGET /api/chat/rooms [36m304[0m 11.480 ms - -[0m
+[0mGET /api/session/info [32m200[0m 4.055 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 4.097 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 7.407 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 6.633 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 7.149 ms - 60[0m
+[0mGET /api/schedule/all [32m200[0m 6.983 ms - 220[0m
+Performance Measurement - getAllSchedules: 3.386197030544281ms
+[0mGET /api/session/info [32m200[0m 6.139 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 13.986 ms - 2[0m
+[0mPOST /api/schedule [32m201[0m 17.101 ms - 202[0m
+Performance Measurement - createSchedule: 13.091067969799042ms
+[0mPOST /api/schedule [32m201[0m 14.599 ms - 205[0m
+Performance Measurement - createSchedule: 10.717601954936981ms
+[0mGET /api/schedule [33m404[0m 17.100 ms - 151[0m
+[0mGET /api/session/info [32m200[0m 16.750 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 23.408 ms - 2[0m
+[0mGET /api/schedule/all [32m200[0m 7.910 ms - 220[0m
+Performance Measurement - getAllSchedules: 3.159197986125946ms
+[0mGET /api/meeting [33m401[0m 0.827 ms - 44[0m
+[0mGET /api/auth/logout [36m302[0m 0.911 ms - 41[0m
+[0mGET /api/session/info [33m401[0m 0.855 ms - 76[0m
+[0mGET /api/auth/login [36m302[0m 0.998 ms - 0[0m
+[0mGET /api/session/info [32m200[0m 16.747 ms - 60[0m
+[0mGET /api/session/info [32m200[0m 9.338 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 15.884 ms - 2[0m
+[0mGET /api/schedule/all [32m200[0m 8.682 ms - 220[0m
+Performance Measurement - getAllSchedules: 5.216198980808258ms
+[0mGET /api/session/info [32m200[0m 17.533 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 22.089 ms - 2[0m
+[0mGET /api/session/info [33m401[0m 0.888 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.773 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.844 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.632 ms - 76[0m
+[0mGET /api/session/info [32m200[0m 46.849 ms - 60[0m
+[0mGET /api/chat/rooms [32m200[0m 56.198 ms - 2[0m
+[0mGET /api/session/info [33m401[0m 0.963 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.604 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.859 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.639 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.846 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.662 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.844 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.957 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.788 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.617 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.870 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.857 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.886 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.687 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.870 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.659 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.922 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.920 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.857 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.602 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.960 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.651 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.834 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.878 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.900 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.896 ms - 76[0m
+[0mGET /api/meeting [33m401[0m 0.845 ms - 44[0m
+[0mGET /api/session/info [33m401[0m 0.916 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.865 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.855 ms - 76[0m
+[0mGET / [33m404[0m 0.919 ms - 139[0m
+[0mGET /api/session/info [33m401[0m 0.801 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.893 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.859 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.874 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.813 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.822 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.904 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.874 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.792 ms - 76[0m
+[0mOPTIONS /api/schedule/all [32m204[0m 0.443 ms - 0[0m
+[0mOPTIONS /api/schedule/all [32m204[0m 0.139 ms - 0[0m
+[0mOPTIONS /api/schedule [32m204[0m 0.190 ms - 0[0m
+[0mGET /api/session/info [33m401[0m 0.877 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.634 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.906 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.744 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.853 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.637 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 0.931 ms - 76[0m
+[0mGET /api/session/info [33m401[0m 2.110 ms - 76[0m
