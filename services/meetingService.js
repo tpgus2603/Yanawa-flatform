@@ -314,130 +314,139 @@ class MeetingService {
     
     async getMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
-
-        const meetings = await Meeting.findAll({
-            attributes: [
-                'id',
-                'title',
-                'description',
-                'time_idx_start',
-                'time_idx_end',
-                'location',
-                'time_idx_deadline',
-                'type',
-                'max_num',
-                'cur_num',
-            ],
-            include: [
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    required: false, 
-                    attributes: [],
-                },
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                }
-            ],
-            order: [['createdAt', 'DESC']],
-            offset
-        });
     
-        const hasNext = meetings.length > limit;
-        const content = await Promise.all(
-            meetings.slice(0, limit).map(async (meeting) => {
-                const isParticipant = await MeetingParticipant.findOne({
-                    where: {
-                        meeting_id: meeting.id,
-                        user_id: userId
+        try {
+            const meetings = await Meeting.findAll({
+                attributes: [
+                    'id', 'title', 'description',
+                    'time_idx_start', 'time_idx_end',
+                    'location', 'time_idx_deadline',
+                    'type', 'max_num', 'cur_num',
+                    'created_at' 
+                ],
+                include: [
+                    {
+                        model: MeetingParticipant,
+                        as: 'participants',
+                        required: false,
+                        where: { user_id: userId },
+                        attributes: []
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['name'],
+                        required: false
                     }
-                });
+                ],
+                where: {
+                    [Op.or]: [
+                        { created_by: userId },
+                        { '$participants.meeting_id$': { [Op.col]: 'Meeting.id' } },
+                        { '$participants.user_id$': userId }
+                    ]
+                },
+                subQuery: false,
+                order: [['created_at', 'DESC']],
+                limit: limit + 1,
+                offset,
+                distinct: true
+            });
     
-                const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-                    userId,
-                    meeting.time_idx_start,
-                    meeting.time_idx_end
-                );
+            const hasNext = meetings.length > limit;
+            const content = await Promise.all(
+                meetings.slice(0, limit).map(async (meeting) => {
+                    const isParticipant = true;  
+                    const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                        userId,
+                        meeting.time_idx_start,
+                        meeting.time_idx_end
+                    );
     
-                const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-                return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
-            })
-        );
+                    return new MeetingResponseDTO(
+                        meeting,
+                        isParticipant,
+                        hasConflict,
+                        meeting.creator?.name || 'Unknown'
+                    );
+                })
+            );
     
-        return {
-            content,
-            hasNext
-        };
+            return { content, hasNext };
+        } catch (error) {
+            console.error('getMeetings error:', error);
+            throw new Error('Failed to fetch meetings');
+        }
     }
 
     async getMyMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
     
-        const meetings = await Meeting.findAll({
-            attributes: [
-                'id',
-                'title',
-                'description',
-                'time_idx_start',
-                'time_idx_end',
-                'location',
-                'time_idx_deadline',
-                'type',
-                'max_num',
-                'cur_num',
-            ],
-            include: [
-                {
-                    model: MeetingParticipant,
-                    as: 'participants',
-                    where: { user_id: userId }, 
-                    attributes: [],
-                },
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name'],
-                }
-            ],
-            where: {
-                [Op.or]: [
-                    { created_by: userId },  
-                    { '$participants.user_id$': userId }  
-                ]
-            },
-            order: [['createdAt', 'DESC']],
-            offset
-        });
-    
-        const hasNext = meetings.length > limit;
-        const content = await Promise.all(
-            meetings.slice(0, limit).map(async (meeting) => {
-                const isParticipant = await MeetingParticipant.findOne({
-                    where: {
-                        meeting_id: meeting.id,
-                        user_id: userId
+        try {
+            const meetings = await Meeting.findAll({
+                attributes: [
+                    'id', 'title', 'description', 'time_idx_start',
+                    'time_idx_end', 'location', 'time_idx_deadline',
+                    'type', 'max_num', 'cur_num',
+                ],
+                include: [
+                    {
+                        model: MeetingParticipant,
+                        as: 'participants',
+                        required: false,
+                        attributes: []
+                    },
+                    {
+                        model: User,
+                        as: 'creator',
+                        attributes: ['name']
                     }
-                });
+                ],
+                where: {
+                    [Op.or]: [
+                        { created_by: userId },
+                        { '$participants.meeting_id$': { [Op.col]: 'Meeting.id' } },
+                        { '$participants.user_id$': userId }
+                    ]
+                },
+                subQuery: false,
+                order: [['created_at', 'DESC']],
+                limit: limit + 1,
+                offset,
+                distinct: true
+            });
     
-                const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-                    userId,
-                    meeting.time_idx_start,
-                    meeting.time_idx_end
-                );
+            const hasNext = meetings.length > limit;
+            const content = await Promise.all(
+                meetings.slice(0, limit).map(async (meeting) => {
+                    const isParticipant = await MeetingParticipant.findOne({
+                        where: {
+                            meeting_id: meeting.id,
+                            user_id: userId
+                        }
+                    });
     
-                const creatorName = meeting.creator ? meeting.creator.name : 'Unknown';
-                return new MeetingResponseDTO(meeting, !!isParticipant, hasConflict, creatorName);
-            })
-        );
+                    const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                        userId,
+                        meeting.time_idx_start,
+                        meeting.time_idx_end
+                    );
     
-        return {
-            content,
-            hasNext
-        };
+                    return {
+                        ...meeting.toJSON(),
+                        isParticipant: !!isParticipant,
+                        hasConflict,
+                        creatorName: meeting.creator?.name || 'Unknown'
+                    };
+                })
+            );
+    
+            return { content, hasNext };
+        } catch (error) {
+            console.error('getMyMeetings error:', error);
+            throw new Error('Failed to fetch my meetings');
+        }
     }
-
     async getMeetingDetail(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
