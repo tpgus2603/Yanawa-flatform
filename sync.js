@@ -1,7 +1,5 @@
 // sync.js
 
-//require('dotenv').config(); // 환경 변수 로드
-
 const sequelize = require('./config/sequelize');
 const model=require('./models'); // 모델들을 가져옴 (사이드 이펙트로 모델들이 등록됨)
 

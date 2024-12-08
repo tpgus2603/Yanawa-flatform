@@ -11,9 +11,7 @@ const FriendListDTO = require('../dtos/FriendListDTO');
 class FriendService {
     /**
      * User 존재 여부 유효성 검사
-     * @param {number} userId - 검사할 사용자 ID
-     * @returns {Promise<User>} - 유효한 사용자 객체
-     * @throws {Error} - 사용자가 존재하지 않을 경우
+     * userId - 검사할 사용자 ID
      */
     async validUser(userId) {
         const user = await User.findByPk(userId);
@@ -25,10 +23,9 @@ class FriendService {
 
     /**
      * 친구 요청 보내기
-     * @param {number} userId - 친구 요청을 보내는 사용자 ID
-     * @param {number} friendId - 친구 요청을 받는 사용자 ID
-     * @returns {Promise<FriendResponseDTO>} - 생성된 친구 요청 DTO
-     * @throws {Error} - 유효하지 않은 요청일 경우
+     * userId - 친구 요청을 보내는 사용자 ID
+     * friendId - 친구 요청을 받는 사용자 ID
+     * returns - 생성된 친구 요청 DTO
      */
     async sendFriendRequest(userId, friendId) {
         await this.validUser(userId);
@@ -81,8 +78,8 @@ class FriendService {
 
     /**
      * 받은 친구 요청 목록 조회
-     * @param {number} userId - 요청을 받은 사용자 ID
-     * @returns {Promise<Array<FriendResponseDTO>>} - 받은 친구 요청 목록 DTO 배열
+      userId - 요청을 받은 사용자 ID
+     받은 친구 요청 목록 DTO 배열
      */
     async getReceivedRequests(userId) {
         const receivedRequests = await Friend.findAll({
@@ -101,8 +98,7 @@ class FriendService {
 
     /**
      * 보낸 친구 요청 목록 조회
-     * @param {number} userId - 요청을 보낸 사용자 ID
-     * @returns {Promise<Array<FriendResponseDTO>>} - 보낸 친구 요청 목록 DTO 배열
+     * userId - 요청을 보낸 사용자 ID
      */
     async getSentRequests(userId) {
         const sentRequests = await Friend.findAll({
@@ -163,10 +159,9 @@ class FriendService {
 
     /**
      * 친구 요청 거절
-     * @param {number} userId - 요청을 거절하는 사용자 ID
-     * @param {number} friendId - 친구 요청을 보낸 사용자 ID
-     * @returns {Promise<number>} - 삭제된 친구 요청 수
-     * @throws {Error} - 친구 요청이 존재하지 않을 경우
+     *userId - 요청을 거절하는 사용자 ID
+     *  friendId - 친구 요청을 보낸 사용자 ID
+     * returns  - 삭제된 친구 요청 수
      */
     async rejectFriendRequest(userId, friendId) {
         const result = await Friend.destroy({
@@ -186,10 +181,10 @@ class FriendService {
 
     /**
      * 친구 목록 조회
-     * @param {number} userId - 친구 목록을 조회할 사용자 ID
-     * @param {number} limit - 한 페이지에 표시할 친구 수
-     * @param {number} offset - 페이징 오프셋
-     * @returns {Promise<Array<FriendListDTO>>} - 친구 목록 DTO 배열
+     userId - 친구 목록을 조회할 사용자 ID
+     limit - 한 페이지에 표시할 친구 수
+     offset - 페이징 오프셋
+     친구 목록 DTO 배열
      */
     async getFriendList(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
@@ -215,7 +210,7 @@ class FriendService {
                 }
             ],
             order: [['id', 'ASC']],
-            limit: limit + 1, // 다음 페이지 존재 여부 확인을 위해 1개 더 조회
+            limit: limit + 1, 
             offset
         });
     
@@ -232,10 +227,10 @@ class FriendService {
 
     /**
      * 친구 삭제
-     * @param {number} userId - 친구를 삭제하는 사용자 ID
-     * @param {number} friendId - 삭제할 친구의 사용자 ID
-     * @returns {Promise<number>} - 삭제된 친구 관계 수
-     * @throws {Error} - 친구 관계가 존재하지 않을 경우
+     - 친구를 삭제하는 사용자 ID
+     - 삭제할 친구의 사용자 ID
+     - 삭제된 친구 관계 수
+     -친구 관계가 존재하지 않을 경우
      */
     async deleteFriend(userId, friendId) {
         const result = await Friend.destroy({
