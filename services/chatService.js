@@ -30,8 +30,11 @@ class ChatService {
 }
 
   // 채팅방 목록 조회
-  async getChatRooms() {
-    const rooms = await ChatRooms.find({}, { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } });
+  async getChatRooms(name) {
+    const rooms = await ChatRooms.find(
+      { "participants.name": name },
+      { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } }
+    );
     return rooms.map(room => {
       const lastMessage = room.messages[0] || {};
       return {
