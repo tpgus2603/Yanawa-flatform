@@ -130,5 +130,6 @@ module.exports = {
     Meeting,
     MeetingParticipant,
   Friend,
+  Invite,
   FcmToken, 
 };
