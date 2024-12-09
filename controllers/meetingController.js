@@ -166,6 +166,24 @@ class MeetingController {
         }
     }
 
+    /**
+     * 번개 모임 삭제
+     * DELETE /api/meeting/:meetingId
+     */
+    // controllers/meetingController.js
+    async deleteMeeting(req, res) {
+        const { meetingId } = req.params;
+        const userId = req.user.id;
+
+        try {
+            await MeetingService.deleteMeeting(meetingId, userId);
+            res.status(200).json({ message: '모임이 삭제되었습니다.' });
+        } catch (err) {
+            console.error('모임 삭제 오류:', err);
+            res.status(500).json({ error: err.message || '모임 삭제 실패' });
+        }
+    }
+
 }
 
 module.exports = new MeetingController();

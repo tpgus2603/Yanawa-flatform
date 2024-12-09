@@ -47,7 +47,7 @@ class MeetingService {
     //     };
     //     await this.publishToQueue('meeting_push_notifications', event); // meeting_push_notifications 큐에 메시지 발행
     // }
-     async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens, type) {
+    async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens, type) {
         const event = {
             meetingTitle,
             inviterName,
@@ -76,7 +76,7 @@ class MeetingService {
 
         // 사용자와 FCM 토큰 조회
         const user = await this._findUserWithFcmTokens(created_by);
-        console.log("user", user);  
+        console.log("user", user);
         const userFcmTokens = user.fcmTokenList.map((fcmToken) => fcmToken.token);
 
 
@@ -157,9 +157,9 @@ class MeetingService {
             // RabbitMQ 메시지 발행 (푸시 알림 요청)
             if (inviteeTokens.length > 0) {
                 await this.sendMeetingPushNotificationRequest(
-                    title, 
-                    user.name, 
-                    inviteeTokens, 
+                    title,
+                    user.name,
+                    inviteeTokens,
                     'invite'
                 );
             }
@@ -229,7 +229,7 @@ class MeetingService {
         return availableFriendIds;
     }
 
-  
+
     async joinMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
         console.log(`참여하려는 모임: ${JSON.stringify(meeting)}`);
@@ -254,104 +254,104 @@ class MeetingService {
 
         // 트랜잭션을 사용하여 참가자 추가 및 스케줄 업데이트를 원자적으로 처리
         await sequelize.transaction(async (transaction) => {
-          if (meeting.cur_num >= meeting.max_num) {
-            throw new Error("모임 인원이 모두 찼습니다.");
-          }
-          // 스케줄 충돌 확인
-          const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
-            userId,
-            meeting.time_idx_start,
-            meeting.time_idx_end,
-            transaction
-          );
-          console.log(`스케줄 충돌 결과: ${hasConflict}`);
-          if (hasConflict) {
-            throw new Error("스케줄이 겹칩니다. 다른 모임에 참가하세요.");
-          }
-
-          await MeetingParticipant.create(
-            { meeting_id: meetingId, user_id: userId },
-            { transaction }
-          );
-
-        const time_indices = Array.from(
-            { length: meeting.time_idx_end - meeting.time_idx_start + 1 },
-            (_, i) => meeting.time_idx_start + i
-        );
-        
-        await ScheduleService.createSchedules({
-            userId: userId,
-            title: `번개 모임: ${meeting.title}`,
-            is_fixed: false,
-            time_indices: time_indices,
-        }, transaction);
-
-          // 채팅방 참가 (MongoDB)
-          const user = await User.findOne({
-            where: { id: userId },
-            include: [
-                {
-                    model: FcmToken,
-                    as: 'fcmTokenList', // FCM 토큰 가져오기
-                    attributes: ['token'],
-                },
-            ],
-            transaction
-          });
-
-          const userFcmTokens = user.fcmTokenList.map((token) => token.token);
-
-          const chatRoom = await ChatRooms.findOne({
-            chatRoomId: meeting.chatRoomId,
-          });
-
-          console.log("여기까지");
-          console.log("user.name", user.name);
-          console.log("참가하는 유저 fcm", userFcmTokens);
-          if (chatRoom && !chatRoom.participants.includes(user.name)) {
-            // 참가자 추가
-            chatRoom.participants.push({
-                name: user.name,
-                fcmTokens: userFcmTokens, // FCM 토큰 추가
-            });
-            chatRoom.isOnline.set(user.name, false);
-            chatRoom.lastReadAt.set(user.name, new Date());
-            chatRoom.lastReadLogId.set(user.name, null);
-
-            const joinMessage = {
-                message: `${nickname}님이 참가했습니다.`,
-                timestamp: new Date(),
-                type: 'join'
-            };
-
-            chatRoom.messages.push(joinMessage);
-
-            // 기존 참가자 FCM 토큰 가져오기
-            const otherParticipants = chatRoom.participants.filter(participant => participant.name !== user.name);
-            const otherParticipantTokens = otherParticipants.flatMap(participant => participant.fcmTokens);
-
-            if (otherParticipantTokens.length > 0) {
-                // RabbitMQ 메시지 발행
-                await this.sendMeetingPushNotificationRequest(
-                    meeting.title,
-                    user.name,
-                    otherParticipantTokens,
-                    'join'
-                );
+            if (meeting.cur_num >= meeting.max_num) {
+                throw new Error("모임 인원이 모두 찼습니다.");
+            }
+            // 스케줄 충돌 확인
+            const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
+                userId,
+                meeting.time_idx_start,
+                meeting.time_idx_end,
+                transaction
+            );
+            console.log(`스케줄 충돌 결과: ${hasConflict}`);
+            if (hasConflict) {
+                throw new Error("스케줄이 겹칩니다. 다른 모임에 참가하세요.");
             }
 
-            await chatRoom.save();
-          }
+            await MeetingParticipant.create(
+                { meeting_id: meetingId, user_id: userId },
+                { transaction }
+            );
 
-          // 현재 인원 수 증가
-          await meeting.increment("cur_num", { by: 1, transaction });
+            const time_indices = Array.from(
+                { length: meeting.time_idx_end - meeting.time_idx_start + 1 },
+                (_, i) => meeting.time_idx_start + i
+            );
+
+            await ScheduleService.createSchedules({
+                userId: userId,
+                title: `번개 모임: ${meeting.title}`,
+                is_fixed: false,
+                time_indices: time_indices,
+            }, transaction);
+
+            // 채팅방 참가 (MongoDB)
+            const user = await User.findOne({
+                where: { id: userId },
+                include: [
+                    {
+                        model: FcmToken,
+                        as: 'fcmTokenList', // FCM 토큰 가져오기
+                        attributes: ['token'],
+                    },
+                ],
+                transaction
+            });
+
+            const userFcmTokens = user.fcmTokenList.map((token) => token.token);
+
+            const chatRoom = await ChatRooms.findOne({
+                chatRoomId: meeting.chatRoomId,
+            });
+
+            console.log("여기까지");
+            console.log("user.name", user.name);
+            console.log("참가하는 유저 fcm", userFcmTokens);
+            if (chatRoom && !chatRoom.participants.includes(user.name)) {
+                // 참가자 추가
+                chatRoom.participants.push({
+                    name: user.name,
+                    fcmTokens: userFcmTokens, // FCM 토큰 추가
+                });
+                chatRoom.isOnline.set(user.name, false);
+                chatRoom.lastReadAt.set(user.name, new Date());
+                chatRoom.lastReadLogId.set(user.name, null);
+
+                const joinMessage = {
+                    message: `${nickname}님이 참가했습니다.`,
+                    timestamp: new Date(),
+                    type: 'join'
+                };
+
+                chatRoom.messages.push(joinMessage);
+
+                // 기존 참가자 FCM 토큰 가져오기
+                const otherParticipants = chatRoom.participants.filter(participant => participant.name !== user.name);
+                const otherParticipantTokens = otherParticipants.flatMap(participant => participant.fcmTokens);
+
+                if (otherParticipantTokens.length > 0) {
+                    // RabbitMQ 메시지 발행
+                    await this.sendMeetingPushNotificationRequest(
+                        meeting.title,
+                        user.name,
+                        otherParticipantTokens,
+                        'join'
+                    );
+                }
+
+                await chatRoom.save();
+            }
+
+            // 현재 인원 수 증가
+            await meeting.increment("cur_num", { by: 1, transaction });
         });
     }
 
-    
+
     async getMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
-    
+
         try {
             const meetings = await Meeting.findAll({
                 attributes: [
@@ -374,7 +374,7 @@ class MeetingService {
                 offset,
                 distinct: true
             });
-    
+
             const hasNext = meetings.length > limit;
             const content = await Promise.all(
                 meetings.slice(0, limit).map(async (meeting) => {
@@ -384,13 +384,13 @@ class MeetingService {
                             user_id: userId
                         }
                     });
-    
+
                     const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
                         userId,
                         meeting.time_idx_start,
                         meeting.time_idx_end
                     );
-    
+
                     return new MeetingResponseDTO(
                         meeting,
                         !!isParticipant,
@@ -399,7 +399,7 @@ class MeetingService {
                     );
                 })
             );
-    
+
             return { content, hasNext };
         } catch (error) {
             console.error('getMeetings error:', error);
@@ -409,7 +409,7 @@ class MeetingService {
 
     async getMyMeetings(userId, pagination) {
         const { limit = 20, offset = 0 } = pagination;
-    
+
         try {
             const meetings = await Meeting.findAll({
                 attributes: [
@@ -438,7 +438,7 @@ class MeetingService {
                 offset,
                 distinct: true
             });
-    
+
             const hasNext = meetings.length > limit;
             const content = meetings.slice(0, limit).map(meeting => {
                 return new MeetingResponseDTO(
@@ -448,14 +448,14 @@ class MeetingService {
                     meeting.creator?.name || 'Unknown'
                 );
             });
-    
+
             return { content, hasNext };
         } catch (error) {
             console.error('getMyMeetings error:', error);
             throw new Error('Failed to fetch my meetings');
         }
     }
-    
+
     async getMeetingDetail(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId, {
             include: [
@@ -477,17 +477,17 @@ class MeetingService {
                 }
             ]
         });
-    
+
         if (!meeting) {
             throw new Error("모임을 찾을 수 없습니다.");
         }
-    
+
         const hasConflict = await ScheduleService.checkScheduleOverlapByTime(
             userId,
             meeting.time_idx_start,
             meeting.time_idx_end
         );
-    
+
         return new MeetingDetailResponseDTO(meeting, hasConflict);
     }
 
@@ -563,13 +563,13 @@ class MeetingService {
         // 저장
         chatRoom.save();
     }
-    
+
     async leaveMeeting(meetingId, userId) {
         const meeting = await Meeting.findByPk(meetingId);
         if (!meeting) {
             throw new Error('모임을 찾을 수 없습니다.');
         }
-    
+
         await sequelize.transaction(async (transaction) => {
             // 참가자 확인
             const participant = await MeetingParticipant.findOne({
@@ -579,16 +579,16 @@ class MeetingService {
                 },
                 transaction
             });
-    
+
             if (!participant) {
                 throw new Error('참가하지 않은 모임입니다.');
             }
-    
+
             // 생성자는 탈퇴할 수 없음
             if (meeting.created_by === userId) {
                 throw new Error('모임 생성자는 탈퇴할 수 없습니다.');
             }
-    
+
             // 참가자 제거
             await MeetingParticipant.destroy({
                 where: {
@@ -597,7 +597,7 @@ class MeetingService {
                 },
                 transaction
             });
-    
+
             // 관련 스케줄 삭제
             await Schedule.destroy({
                 where: {
@@ -609,7 +609,7 @@ class MeetingService {
                 },
                 transaction
             });
-    
+
             // 채팅방에서 제거
             const chatRoom = await ChatRooms.findOne({
                 chatRoomId: meeting.chatRoomId
@@ -622,9 +622,48 @@ class MeetingService {
                 chatRoom.lastReadLogId.delete(user.name);
                 await chatRoom.save();
             }
-    
+
             // 현재 인원 수 감소
             await meeting.decrement('cur_num', { by: 1, transaction });
+        });
+    }
+
+    async deleteMeeting(meetingId, userId) {
+        const meeting = await Meeting.findByPk(meetingId);
+
+        if (!meeting) {
+            throw new Error('모임을 찾을 수 없습니다.');
+        }
+
+        if (meeting.created_by !== userId) {
+            throw new Error('모임 생성자만 삭제할 수 있습니다.');
+        }
+
+        return await sequelize.transaction(async (transaction) => {
+            const participants = await MeetingParticipant.findAll({
+                where: { meeting_id: meetingId },
+                attributes: ['user_id'],
+                transaction
+            });
+
+            const participantIds = participants.map(p => p.user_id);
+
+            // 모든 참가자의 스케줄 삭제
+            await Schedule.destroy({
+                where: {
+                    user_id: { [Op.in]: participantIds },
+                    title: `번개 모임: ${meeting.title}`,
+                    time_idx: {
+                        [Op.between]: [meeting.time_idx_start, meeting.time_idx_end]
+                    }
+                },
+                transaction
+            });
+
+            await ChatRooms.deleteOne({ chatRoomId: meeting.chatRoomId });
+
+            // 모임 관련 데이터 삭제
+            await meeting.destroy({ transaction });
         });
     }
 }
