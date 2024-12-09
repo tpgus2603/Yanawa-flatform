@@ -111,13 +111,13 @@ Meeting.hasMany(Invite, {
   onDelete: 'CASCADE',
 });
 FcmToken.belongsTo(User,{
-    foreignkey:'userId',
+    foreignKey:'userId',
     as:'user',
     onDelete:'CASCADE',
   });
 User.hasMany(FcmToken,
   {
-    foreignkey:'userId',
+    foreignKey:'userId',
     as:'fcmTokenList',
     onDelete:'CASCADE',
   });
