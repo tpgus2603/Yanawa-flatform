@@ -39,13 +39,22 @@ class MeetingService {
         return totalIdx;
     }
 
-    async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens) {
+    // async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens) {
+    //     const event = {
+    //         meetingTitle,
+    //         inviterName,
+    //         inviteeTokens,
+    //     };
+    //     await this.publishToQueue('meeting_push_notifications', event); // meeting_push_notifications 큐에 메시지 발행
+    // }
+     async sendMeetingPushNotificationRequest(meetingTitle, inviterName, inviteeTokens, type) {
         const event = {
             meetingTitle,
             inviterName,
             inviteeTokens,
+            type, // 이벤트 타입 ('invite' 또는 'join')
         };
-        await this.publishToQueue('meeting_push_notifications', event); // meeting_push_notifications 큐에 메시지 발행
+        await this.publishToQueue('meeting_push_notifications', event); // 큐에 메시지 발행
     }
 
 
@@ -147,7 +156,12 @@ class MeetingService {
 
             // RabbitMQ 메시지 발행 (푸시 알림 요청)
             if (inviteeTokens.length > 0) {
-                await this.sendMeetingPushNotificationRequest(title, user.name, inviteeTokens);
+                await this.sendMeetingPushNotificationRequest(
+                    title, 
+                    user.name, 
+                    inviteeTokens, 
+                    'invite'
+                );
             }
 
             const chatRoom = await ChatRooms.findOne({ chatRoomId: chatRoomId });
@@ -311,6 +325,20 @@ class MeetingService {
             };
 
             chatRoom.messages.push(joinMessage);
+
+            // 기존 참가자 FCM 토큰 가져오기
+            const otherParticipants = chatRoom.participants.filter(participant => participant.name !== user.name);
+            const otherParticipantTokens = otherParticipants.flatMap(participant => participant.fcmTokens);
+
+            if (otherParticipantTokens.length > 0) {
+                // RabbitMQ 메시지 발행
+                await this.sendMeetingPushNotificationRequest(
+                    meeting.title,
+                    user.name,
+                    otherParticipantTokens,
+                    'join'
+                );
+            }
 
             await chatRoom.save();
           }
