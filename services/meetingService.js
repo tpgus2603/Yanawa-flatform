@@ -119,8 +119,8 @@ class MeetingService {
             );
 
             const time_indices = Array.from(
-                { length: time_idx_end - time_idx_start + 1 },
-                (_, i) => time_idx_start + i
+                { length: parseInt(time_idx_end) - parseInt(time_idx_start) + 1 },
+                (_, i) => (parseInt(time_idx_start) + i).toString()
             );
             await ScheduleService.createSchedules({
                 userId: created_by,
