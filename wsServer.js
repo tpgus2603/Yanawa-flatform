@@ -110,6 +110,9 @@ function handleWebSocketUpgrade(req, socket) {
     'Upgrade: websocket',
     'Connection: Upgrade',
     `Sec-WebSocket-Accept: ${acceptKey}`
+    `Sec-WebSocket-Accept: ${acceptKey}`,
+    `Access-Control-Allow-Origin: ${FRONT_URL}`, // 환경변수에서 가져옴
+    'Access-Control-Allow-Credentials: true'
   ];
 
   socket.write(responseHeaders.join('\r\n') + '\r\n\r\n');
