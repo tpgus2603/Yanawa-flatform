@@ -42,7 +42,7 @@ async function startPushServer() {
               body: `${sender}: ${messageContent}`,
             },
             data: {
-              click_action: `http://localhost:3000/chat/chatRoom/${chatRoomId}`, // 클릭 시 이동할 URL
+              click_action: `${process.env.FRONT_URL}/chat/chatRoom/${chatRoomId}`, // 클릭 시 이동할 URL
             },
             android: { priority: 'high' },
             apns: { payload: { aps: { sound: 'default' } } },
@@ -84,7 +84,7 @@ async function startPushServer() {
             body: `${inviterName}님이 ${meetingTitle} 모임에 초대했습니다.`,
           },
           data: {
-            click_action: `http://localhost:3000`, // 클릭 시 이동할 URL
+            click_action: `${process.env.FRONT_URL}/meeting`, // 클릭 시 이동할 URL
           },
           android: { priority: 'high' },
           apns: { payload: { aps: { sound: 'default' } } },
