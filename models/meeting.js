@@ -24,6 +24,7 @@ const Meeting = sequelize.define('Meeting', {
     },
     time_idx_deadline: {
         type: DataTypes.INTEGER,
+	defaultValue:671,
     },
     type: {
         type: DataTypes.ENUM('OPEN', 'CLOSE'),
@@ -37,7 +38,7 @@ const Meeting = sequelize.define('Meeting', {
     max_num: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 10, // 기본값 설정 (필요에 따라 조정)
+        defaultValue: 20, // 기본값 설정 (필요에 따라 조정)
     },
     cur_num: {
         type: DataTypes.INTEGER,
