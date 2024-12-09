@@ -300,9 +300,18 @@ class MeetingService {
                 name: user.name,
                 fcmTokens: userFcmTokens, // FCM 토큰 추가
             });
-            chatRoom.isOnline.set(user.name, true);
+            chatRoom.isOnline.set(user.name, false);
             chatRoom.lastReadAt.set(user.name, new Date());
             chatRoom.lastReadLogId.set(user.name, null);
+
+            const joinMessage = {
+                message: `${nickname}님이 참가했습니다.`,
+                timestamp: new Date(),
+                type: 'join'
+            };
+
+            chatRoom.messages.push(joinMessage);
+
             await chatRoom.save();
           }
 
