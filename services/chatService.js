@@ -41,7 +41,7 @@ class ChatService {
         chatRoomId: room.chatRoomId,
         chatRoomName: room.chatRoomName,
         lastMessage: {
-          sender: lastMessage.sender || '없음',
+          sender: lastMessage.sender || '알림',
           message: lastMessage.message || '메시지 없음',
           timestamp: lastMessage.timestamp || null,
         },
