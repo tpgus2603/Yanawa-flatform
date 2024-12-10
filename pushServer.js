@@ -42,7 +42,7 @@ async function startPushServer() {
               body: `${sender}: ${messageContent}`,
             },
             data: {
-              click_action: `${process.env.FRONT_URL}/chat/chatRoom/${chatRoomId}`, // 클릭 시 이동할 URL
+              click_action: `${process.env.FRONT_URL}/mypage`, // 클릭 시 이동할 URL
             },
             android: { priority: 'high' },
             apns: { payload: { aps: { sound: 'default' } } },
