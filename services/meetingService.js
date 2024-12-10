@@ -319,7 +319,7 @@ class MeetingService {
                 chatRoom.lastReadLogId.set(user.name, null);
 
                 const joinMessage = {
-                    message: `${nickname}님이 참가했습니다.`,
+                    message: `${user.name}님이 참가했습니다.`,
                     timestamp: new Date(),
                     type: 'join'
                 };
