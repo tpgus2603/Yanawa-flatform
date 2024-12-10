@@ -42,7 +42,7 @@ async function startPushServer() {
               body: `${sender}: ${messageContent}`,
             },
             data: {
-              click_action: `http://localhost:3000/chat/chatRoom/${chatRoomId}`, // 클릭 시 이동할 URL
+              click_action: `${process.env.FRONT_URL}/mypage`, // 클릭 시 이동할 URL
             },
             android: { priority: 'high' },
             apns: { payload: { aps: { sound: 'default' } } },
@@ -71,24 +71,42 @@ async function startPushServer() {
   channel.consume(meetingQueue, async (msg) => {
     if (msg !== null) {
       const event = JSON.parse(msg.content.toString());
-      const { meetingTitle, inviterName, inviteeTokens } = event;
+      const { meetingTitle, inviterName, inviteeTokens, type } = event;
 
       console.log('Meeting 푸시 알림 요청 수신:', event);
       console.log("푸시 알림 보내는 fcmToken", inviteeTokens);
 
       if (inviteeTokens.length > 0) {
-        const message = {
-          tokens: inviteeTokens,
-          notification: {
-            title: '번개 모임 초대',
-            body: `${inviterName}님이 ${meetingTitle} 모임에 초대했습니다.`,
-          },
-          data: {
-            click_action: `http://localhost:3000`, // 클릭 시 이동할 URL
-          },
-          android: { priority: 'high' },
-          apns: { payload: { aps: { sound: 'default' } } },
-        };
+        let message;
+        
+        // 이벤트 타입에 따라 알림 내용 구성
+        if (type === 'invite') {
+            message = {
+                tokens: inviteeTokens,
+                notification: {
+                    title: '번개 모임 초대',
+                    body: `${inviterName}님이 ${meetingTitle} 번개모임에 초대했습니다.`,
+                },
+                data: {
+                    click_action: `${process.env.FRONT_URL}/meeting`, // 클릭 시 이동할 URL
+                },
+                android: { priority: 'high' },
+                apns: { payload: { aps: { sound: 'default' } } },
+            };
+        } else if (type === 'join') {
+            message = {
+                tokens: inviteeTokens,
+                notification: {
+                    title: `${meetingTitle}`,
+                    body: `${inviterName}님이 ${meetingTitle} 모임에 참가했습니다.`,
+                },
+                data: {
+                    click_action: `${process.env.FRONT_URL}/meeting`, // 클릭 시 이동할 URL
+                },
+                android: { priority: 'high' },
+                apns: { payload: { aps: { sound: 'default' } } },
+            };
+        }
 
         try {
           const response = await admin.messaging().sendEachForMulticast(message);

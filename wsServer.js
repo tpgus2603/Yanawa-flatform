@@ -94,6 +94,7 @@ function startWebSocketServer() {
   });
 
   server.on('upgrade', (req, socket, head) => {
+    console.log('WebSocket 업그레이드 요청 수신:', req.headers);
     handleWebSocketUpgrade(req, socket);
   });
 
@@ -103,19 +104,22 @@ function startWebSocketServer() {
 }
 
 function handleWebSocketUpgrade(req, socket) {
-  const key = req.headers['sec-websocket-key'];
-  const acceptKey = generateAcceptValue(key);
-  const responseHeaders = [
-    'HTTP/1.1 101 Switching Protocols',
-    'Upgrade: websocket',
-    'Connection: Upgrade',
-    `Sec-WebSocket-Accept: ${acceptKey}`
-  ];
-
-  socket.write(responseHeaders.join('\r\n') + '\r\n\r\n');
-
-  // 클라이언트를 clients 배열에 추가
-  clients.push(socket);
+  try {
+    const key = req.headers['sec-websocket-key'];
+    const acceptKey = generateAcceptValue(key);
+    const responseHeaders = [
+      'HTTP/1.1 101 Switching Protocols',
+      'Upgrade: websocket',
+      'Connection: Upgrade',
+      `Sec-WebSocket-Accept: ${acceptKey}`,
+      `Access-Control-Allow-Origin: ${process.env.FRONT_URL}`, // 환경변수에서 가져옴
+      'Access-Control-Allow-Credentials: true'
+    ];
+    socket.write(responseHeaders.join('\r\n') + '\r\n\r\n');
+    clients.push(socket);
+  } catch (error) {
+    console.error('WebSocket 업그레이드 실패:', error);
+  }  
 
   socket.on('data', async buffer => {
     try {

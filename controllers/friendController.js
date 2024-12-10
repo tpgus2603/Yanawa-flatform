@@ -12,7 +12,7 @@ class friendController {
     async sendFriendRequest(req, res) {
         try {
             return await performanceMonitor.measureAsync('sendFriendRequest', async () => {
-                const email  = req.body;
+                const { email }  = req.body;
                 const userId = req.user.id;
 
                 if (!userId || !email) {
@@ -97,9 +97,29 @@ class friendController {
     async acceptRequest(req, res) {
         try {
             return await performanceMonitor.measureAsync('acceptFriendRequest', async () => {
+                if (!req.user || !req.user.id) {
+                    return res.status(401).json({
+                        success: false,
+                        error: {
+                            message: '인증되지 않은 사용자입니다.',
+                            code: 'UNAUTHORIZED'
+                        }
+                    });
+                }
+    
                 const userId = req.user.id;
-                const { friendId } = req.params;
-
+                const friendId = parseInt(req.params.friendId, 10);
+    
+                if (!friendId || isNaN(friendId)) {
+                    return res.status(400).json({
+                        success: false,
+                        error: {
+                            message: '유효하지 않은 친구 ID입니다.',
+                            code: 'INVALID_FRIEND_ID'
+                        }
+                    });
+                }
+    
                 const result = await FriendService.acceptFriendRequest(userId, friendId);
                 return res.status(200).json({
                     success: true,
@@ -107,6 +127,7 @@ class friendController {
                 });
             });
         } catch (error) {
+            console.error('Friend request accept error:', error);
             return res.status(400).json({
                 success: false,
                 error: {
@@ -162,7 +183,9 @@ class friendController {
 
                 return res.status(200).json({
                     success: true,
-                    data: friends
+                    data: {
+                        ...friends
+                    }
                 });
             });
         } catch (error) {

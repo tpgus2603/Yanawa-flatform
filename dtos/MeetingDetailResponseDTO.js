@@ -13,8 +13,8 @@ class MeetingDetailResponseDTO {
       this.isScheduleConflict = isScheduleConflict; 
       this.participants = meeting.participants.map(participant => ({
           userId: participant.user_id,
-          name: participant.participantUser ? participant.participantUser.name : 'Unknown',
-          email: participant.participantUser ? participant.participantUser.email : 'Unknown'
+          name: participant.user  ? participant.user.name : 'Unknown',
+          email: participant.user  ? participant.user.email : 'Unknown'
       }));
   }
 }
