@@ -28,6 +28,7 @@ router.get('/:meetingId', MeetingController.getMeetingDetail);
 // 번개 모임 탈퇴
 router.delete('/:meetingId/leave', MeetingController.leaveMeeting);
 
-
+// 번개 모임 삭제
+router.delete('/:meetingId', MeetingController.deleteMeeting);
 
 module.exports = router;

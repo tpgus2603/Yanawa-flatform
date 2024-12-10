@@ -78,6 +78,7 @@ User.hasMany(Schedule, {
   onDelete: 'CASCADE',
 });
 
+
 // Invite 관계 설정
 Invite.belongsTo(Meeting, {
   foreignKey: 'meeting_id',
@@ -109,7 +110,17 @@ Meeting.hasMany(Invite, {
   as: 'invites',
   onDelete: 'CASCADE',
 });
-
+FcmToken.belongsTo(User,{
+    foreignKey:'userId',
+    as:'user',
+    onDelete:'CASCADE',
+  });
+User.hasMany(FcmToken,
+  {
+    foreignKey:'userId',
+    as:'fcmTokenList',
+    onDelete:'CASCADE',
+  });
 
 module.exports = {
     sequelize,
@@ -119,5 +130,6 @@ module.exports = {
     Meeting,
     MeetingParticipant,
   Friend,
+  Invite,
   FcmToken, 
 };

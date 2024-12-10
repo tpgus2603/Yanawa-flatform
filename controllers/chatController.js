@@ -13,7 +13,12 @@ exports.createChatRoom = async (params) => {
 // 채팅방 목록 조회
 exports.getChatRooms = async (req, res) => {
   try {
-    const roomData = await chatService.getChatRooms();
+    
+    const name = req.user.name; // Google 로그인에서 가져온 email
+    console.log("name", name);
+
+    // 본인이 참가자로 포함된 채팅방만 가져오기
+    const roomData = await chatService.getChatRooms(name);
     res.json(roomData);
   } catch (err) {
     console.error('Error fetching rooms:', err);

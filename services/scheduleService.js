@@ -10,11 +10,17 @@ class ScheduleService {
      * @param {object} [transaction] - Sequelize 트랜잭션 객체 -> 미팅방에서 쓰기위해 트랜잭션을 넘겨받는걸 추가 
      */
     async createSchedules({ userId, title, is_fixed, time_indices }, transaction = null) {
+        const parsedTimeIndices = time_indices.map(idx => parseInt(idx, 10));
+
+        if (!userId || !title || !parsedTimeIndices.length) {
+            throw new Error('Required parameters missing');
+        }
+
         const overlaps = await Schedule.findAll({
             where: {
                 user_id: userId,
                 time_idx: {
-                    [Op.in]: time_indices
+                    [Op.in]: parsedTimeIndices
                 }
             },
             transaction
@@ -24,7 +30,7 @@ class ScheduleService {
             throw new Error(`Schedule overlaps at time_idx ${overlaps[0].time_idx}`);
         }
 
-        const scheduleData = time_indices.map(time_idx => ({
+        const scheduleData = parsedTimeIndices.map(time_idx => ({
             user_id: userId,
             title,
             time_idx,
@@ -43,7 +49,7 @@ class ScheduleService {
                 user_id: userId,
                 title,
                 is_fixed,
-                time_indices,
+                time_indices: parsedTimeIndices,
                 createdAt: createdSchedules[0].createdAt,
                 updatedAt: createdSchedules[0].updatedAt
             };
