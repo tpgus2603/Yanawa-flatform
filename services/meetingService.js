@@ -620,6 +620,15 @@ class MeetingService {
                 chatRoom.isOnline.delete(user.name);
                 chatRoom.lastReadAt.delete(user.name);
                 chatRoom.lastReadLogId.delete(user.name);
+
+                const leaveMessage = {
+                    message: `${user.name}님이 퇴장했습니다.`,
+                    timestamp: new Date(),
+                    type: 'leave'
+                };
+
+                chatRoom.messages.push(leaveMessage);
+
                 await chatRoom.save();
             }
 
