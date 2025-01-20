@@ -60,15 +60,18 @@ Pagination을 이용한 전체/참여 모임 조회
 ![image](https://github.com/user-attachments/assets/2fcbd4b4-914f-40cd-946f-934e80625d12)
 
 번개 모임 참여 후 자동적으로 채팅방 참여
+
+
 채팅 내용 검색 & 공지 기능
+
 읽은 사람 수 확인 가능
+
 웹소켓, fcm을 사용한 
-실시간 채팅 및 푸시 알림
-(메시지큐를 활용한 부하 방지) 
+
+실시간 채팅 및 푸시 알림(메시지큐를 활용한 부하 방지) 
+
 ws(웹소켓) 라이브러리 대신 직접 구현
-(reacr, node.js 둘 다)
- (HTTP Upgrade, 메시지 처리, 
-핸들러 기반 구현, heartbeat)
+
 일반 API 서버, 채팅 서버, 푸시 서버 분리
 
 ERD
