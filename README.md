@@ -79,3 +79,14 @@ ERD
 --
 ![image](https://github.com/user-attachments/assets/a6305ff6-ac1d-4ad8-9e0d-b04878438add)
 
+최적화를 통한 성능 개선
+--
+![image](https://github.com/user-attachments/assets/4a34ecc1-3018-4096-b621-4062b1079328)
+
+![image](https://github.com/user-attachments/assets/9834c874-0c1a-4ac7-9cb8-6f0017955fe1)
+
+**향후 계획** 
+
+추후 스프링 부트로 리팩토링 후 로드밸런싱을 적용하여 정식으로 서비스를 오픈해볼 생각입니다 
+
+
