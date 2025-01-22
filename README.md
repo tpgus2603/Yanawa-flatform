@@ -18,7 +18,8 @@ Yanawa-flatform
 
 기능
 -
-### 로그인기능 ###
+로그인기능
+--
 ![image](https://github.com/user-attachments/assets/c4b0d309-1dca-44b1-8d19-a25399bf2c8c)
 
 구글 Oauth API를 이용한 로그인
@@ -27,7 +28,8 @@ Yanawa-flatform
 
 로그아웃
 
-### 스케줄 기능 ###
+스케줄 기능
+--
 ![image](https://github.com/user-attachments/assets/8638cd70-3f73-4208-8d57-b24ecb5733a1)
 
 사용자의 일정에 맞게 고정/유동 스케줄 생성
@@ -48,7 +50,8 @@ Pagination을 통한 사용자의 친구 조회
 
 친구 삭제
 
-### 모임 기능 ###
+모임 기능 
+--
 ![image](https://github.com/user-attachments/assets/79345bf1-87d8-47c5-8640-eecef6c117aa)
 Pagination을 이용한 전체/참여 모임 조회
 
@@ -68,13 +71,11 @@ Pagination을 이용한 전체/참여 모임 조회
 
 웹소켓, fcm을 사용한 
 
-실시간 채팅 및 푸시 알림(메시지큐를 활용한 부하 방지) 
-
-ws(웹소켓) 라이브러리 대신 직접 구현
+실시간 채팅 및 푸시 알림(메시지큐(rabbitmq)를 활용한 부하 방지) 
 
 일반 API 서버, 채팅 서버, 푸시 서버 분리
 
 ERD
--
+--
 ![image](https://github.com/user-attachments/assets/a6305ff6-ac1d-4ad8-9e0d-b04878438add)
 
