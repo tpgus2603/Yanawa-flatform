@@ -61,10 +61,10 @@ Pagination을 이용한 전체/참여 모임 조회
 자유로운 모임 참여/탈퇴
 
 인원을 그만 받고 싶다면? 모임 마감
+
 ![image](https://github.com/user-attachments/assets/2fcbd4b4-914f-40cd-946f-934e80625d12)
 
 번개 모임 참여 후 자동적으로 채팅방 참여
-
 
 채팅 내용 검색 & 공지 기능
 
