@@ -53,6 +53,7 @@ Pagination을 통한 사용자의 친구 조회
 모임 기능 
 --
 ![image](https://github.com/user-attachments/assets/79345bf1-87d8-47c5-8640-eecef6c117aa)
+
 Pagination을 이용한 전체/참여 모임 조회
 
 친구 초대를 활용한 모임 생성-> 생성 모임 시간에 여유로운 친구에게 알림 연동
