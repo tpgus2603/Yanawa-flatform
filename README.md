@@ -82,9 +82,6 @@ ERD
 
 최적화를 통한 성능 개선
 --
-![image](https://github.com/user-attachments/assets/4a34ecc1-3018-4096-b621-4062b1079328)
-
-![image](https://github.com/user-attachments/assets/9834c874-0c1a-4ac7-9cb8-6f0017955fe1)
 
 문제점
 --
