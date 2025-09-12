@@ -32,9 +32,9 @@ class ChatService {
 }
 
   // 채팅방 목록 조회
-  async getChatRooms(name) {
+  async getChatRooms(userId) {
     // 사용자 조회
-    const user = await User.findOne({ where: { name } });
+    const user = await User.findOne({ where: { userId } });
     if (!user) return [];
 
     // 사용자가 참여한 미팅 ID 조회
