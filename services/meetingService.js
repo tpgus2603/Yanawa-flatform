@@ -365,24 +365,13 @@ class MeetingService {
             });
 
             const friendIds = friends.map(f => (f.requester_id === userId ? f.receiver_id : f.requester_id));
-            if (friendIds.length === 0) {
-                return { content: [], hasNext: false };
-            }
 
-            // 2) 친구가 참가한 모임 ID 조회
-            const participantRows = await MeetingParticipant.findAll({
-                where: { user_id: { [Op.in]: friendIds } },
-                attributes: ['meeting_id'],
-            });
+            // 조회할 생성자 ID 목록: 본인 + 친구들
+            const creatorIds = friendIds.length > 0 ? [userId, ...friendIds] : [userId];
 
-            const meetingIds = [...new Set(participantRows.map(p => p.meeting_id))];
-            if (meetingIds.length === 0) {
-                return { content: [], hasNext: false };
-            }
-
-            // 3) 해당 모임들 가져오기 (페이징)
+            // 2) 해당 생성자들이 만든 모임들 가져오기 (페이징)
             const meetings = await Meeting.findAll({
-                where: { id: { [Op.in]: meetingIds } },
+                where: { created_by: { [Op.in]: creatorIds } },
                 attributes: [
                     'id', 'title', 'description',
                     'time_idx_start', 'time_idx_end',
