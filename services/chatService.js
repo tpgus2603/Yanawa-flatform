@@ -1,5 +1,7 @@
 const ChatRooms = require('../schemas/chatRooms');
 const { v4: uuidv4 } = require('uuid');
+const { User, MeetingParticipant, Meeting } = require('../models');
+
 
 class ChatService {
   // 채팅방 생성
@@ -31,15 +33,44 @@ class ChatService {
 
   // 채팅방 목록 조회
   async getChatRooms(name) {
+    // 사용자 조회
+    const user = await User.findOne({ where: { name } });
+    if (!user) return [];
+
+    // 사용자가 참여한 미팅 ID 조회
+    const participantRows = await MeetingParticipant.findAll({
+      where: { user_id: user.id },
+      attributes: ['meeting_id'],
+    });
+
+    const meetingIds = [...new Set(participantRows.map(p => p.meeting_id))];
+    if (meetingIds.length === 0) return [];
+
+    // 미팅에서 chatRoomId 및 제목 조회 (chatRoomName이 없는 경우 제목을 대체로 사용)
+    const meetings = await Meeting.findAll({
+      where: { id: meetingIds },
+      attributes: ['chatRoomId', 'title'],
+    });
+
+    const chatRoomIds = meetings.map(m => m.chatRoomId).filter(Boolean);
+    if (chatRoomIds.length === 0) return [];
+
+    // 실제 채팅방 문서만 조회 (마지막 메시지 포함)
     const rooms = await ChatRooms.find(
-      { "participants.name": name },
-      { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } }
+        { chatRoomId: { $in: chatRoomIds } },
+        { chatRoomId: 1, chatRoomName: 1, messages: { $slice: -1 } }
     );
+
+    const meetingNameMap = {};
+    meetings.forEach(m => {
+      if (m.chatRoomId) meetingNameMap[m.chatRoomId] = m.title;
+    });
+
     return rooms.map(room => {
-      const lastMessage = room.messages[0] || {};
+      const lastMessage = (room.messages && room.messages[0]) || {};
       return {
         chatRoomId: room.chatRoomId,
-        chatRoomName: room.chatRoomName,
+        chatRoomName: room.chatRoomName || meetingNameMap[room.chatRoomId] || '알 수 없는 방',
         lastMessage: {
           sender: lastMessage.sender || '알림',
           message: lastMessage.message || '메시지 없음',
