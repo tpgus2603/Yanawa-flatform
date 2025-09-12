@@ -1,5 +1,5 @@
 // models/meeting.js
-const { DataTypes } = require('sequelize');
+const {DataTypes} = require('sequelize');
 const sequelize = require('../config/sequelize');
 const User = require('./user');
 
@@ -24,7 +24,7 @@ const Meeting = sequelize.define('Meeting', {
     },
     time_idx_deadline: {
         type: DataTypes.INTEGER,
-	defaultValue:671,
+        defaultValue: 671,
     },
     type: {
         type: DataTypes.ENUM('OPEN', 'CLOSE'),

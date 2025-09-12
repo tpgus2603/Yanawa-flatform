@@ -353,7 +353,36 @@ class MeetingService {
         const { limit = 20, offset = 0 } = pagination;
 
         try {
+            // 1) 내 친구 목록 조회 (ACCEPTED)
+            const friends = await Friend.findAll({
+                where: {
+                    [Op.or]: [
+                        { requester_id: userId, status: 'ACCEPTED' },
+                        { receiver_id: userId, status: 'ACCEPTED' },
+                    ],
+                },
+                attributes: ['requester_id', 'receiver_id'],
+            });
+
+            const friendIds = friends.map(f => (f.requester_id === userId ? f.receiver_id : f.requester_id));
+            if (friendIds.length === 0) {
+                return { content: [], hasNext: false };
+            }
+
+            // 2) 친구가 참가한 모임 ID 조회
+            const participantRows = await MeetingParticipant.findAll({
+                where: { user_id: { [Op.in]: friendIds } },
+                attributes: ['meeting_id'],
+            });
+
+            const meetingIds = [...new Set(participantRows.map(p => p.meeting_id))];
+            if (meetingIds.length === 0) {
+                return { content: [], hasNext: false };
+            }
+
+            // 3) 해당 모임들 가져오기 (페이징)
             const meetings = await Meeting.findAll({
+                where: { id: { [Op.in]: meetingIds } },
                 attributes: [
                     'id', 'title', 'description',
                     'time_idx_start', 'time_idx_end',

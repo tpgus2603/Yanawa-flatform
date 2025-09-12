@@ -64,9 +64,6 @@ class FriendService {
                     { model: User, as: 'receiver', attributes: ['id', 'name', 'email'] }
                 ]
             });
-
-            
-
             return new FriendResponseDTO(friendRequestWithDetails.toJSON());
         } catch (error) {
             if (error.name === 'SequelizeUniqueConstraintError') {
