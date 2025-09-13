@@ -7,5 +7,5 @@ output.log
 weblog.log
 start.sh
 start2.sh
-.env.production
 .env.development
+.env.production
