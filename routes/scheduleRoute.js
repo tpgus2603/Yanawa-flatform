@@ -40,5 +40,6 @@ router.put('/', ScheduleController.updateSchedules);
  */
 router.delete('/', ScheduleController.deleteSchedules);
 
+router.get('/friend/:friendId', ScheduleController.getFriendSchedules);
 
 module.exports = router;
