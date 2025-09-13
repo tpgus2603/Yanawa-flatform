@@ -196,6 +196,37 @@ class scheduleController {
             });
         }
     }
+    async getFriendSchedules(req, res) {
+        try {
+            const myId = req.user.id;
+            const friendId = parseInt(req.params.friendId, 10);
+
+            const schedules = await ScheduleService.getFriendSchedules(myId, friendId);
+
+            return res.status(200).json({
+                success: true,
+                data: { schedules }
+            });
+        } catch (error) {
+            if (error.message === 'Not friends') {
+                return res.status(403).json({
+                    success: false,
+                    error: {
+                        message: 'You are not friends with this user',
+                        code: 'NOT_FRIEND'
+                    }
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: 'Failed to fetch friend schedule',
+                    code: 'FRIEND_SCHEDULE_ERROR'
+                }
+            });
+        }
+    }
 }
 
 module.exports = new scheduleController();

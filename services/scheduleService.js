@@ -1,7 +1,7 @@
 // services/scheduleService.js
 const sequelize = require('../config/sequelize');
 const { Op } = require('sequelize');
-const Schedule = require('../models/schedule');
+const { User, Friend, Schedule } = require('../models');
 const ScheduleResponseDTO = require('../dtos/ScheduleResponseDTO');
 
 class ScheduleService {
@@ -262,6 +262,37 @@ class ScheduleService {
             throw error;
         }
     }
+    /**
+     * 친구 스케줄 조회
+     * @param {number} myId - 로그인한 유저 ID
+     * @param {number} friendId - 친구 ID
+     */
+    async getFriendSchedules(myId, friendId) {
+        // 1. 친구 관계 검증
+        const friendship = await Friend.findOne({
+            where: {
+                status: 'ACCEPTED',
+                [Op.or]: [
+                    { requester_id: myId, receiver_id: friendId },
+                    { requester_id: friendId, receiver_id: myId }
+                ]
+            }
+        });
+
+        if (!friendship) {
+            throw new Error('Not friends');
+        }
+
+        // 2. 스케줄 가져오기
+        const schedules = await Schedule.findAll({
+            where: { user_id: friendId },
+            order: [['time_idx', 'ASC']]
+        });
+
+        return ScheduleResponseDTO.groupSchedules(schedules);
+    }
+
+
 }
 
 module.exports = new ScheduleService();
