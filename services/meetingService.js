@@ -435,7 +435,7 @@ class MeetingService {
                     'time_idx_start', 'time_idx_end',
                     'location', 'time_idx_deadline',
                     'type', 'max_num', 'cur_num',
-                    'created_at'
+                    'created_at', 'created_by'
                 ],
                 include: [
                     {
