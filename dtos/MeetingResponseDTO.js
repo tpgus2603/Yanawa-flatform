@@ -2,7 +2,7 @@
 
 
 class MeetingResponseDTO {
-  constructor(meeting, isParticipant, isScheduleConflict, creatorName) {
+  constructor(meeting, isParticipant, isScheduleConflict, isOwner) {
       this.id = meeting.id;
       this.title = meeting.title;
       this.description = meeting.description;
@@ -12,7 +12,7 @@ class MeetingResponseDTO {
       this.time_idx_deadline = meeting.time_idx_deadline;
       this.type = meeting.type;
       this.creatorName = creatorName;
-      this.creatorId = meeting.created_by;
+      this.isOwner = isOwner;
       this.isParticipant = isParticipant;
       this.isScheduleConflict = isScheduleConflict;
   }

@@ -413,7 +413,8 @@ class MeetingService {
                         meeting,
                         !!isParticipant,
                         hasConflict,
-                        meeting.creator?.name || 'Unknown'
+                        meeting.creator?.name || 'Unknown',
+                        meeting.created_by === userId
                     );
                 })
             );
