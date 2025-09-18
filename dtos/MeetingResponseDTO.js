@@ -12,6 +12,7 @@ class MeetingResponseDTO {
       this.time_idx_deadline = meeting.time_idx_deadline;
       this.type = meeting.type;
       this.creatorName = creatorName;
+      this.creatorId = meeting.created_by;
       this.isParticipant = isParticipant;
       this.isScheduleConflict = isScheduleConflict;
   }

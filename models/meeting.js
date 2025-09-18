@@ -45,6 +45,11 @@ const Meeting = sequelize.define('Meeting', {
         allowNull: false,
         defaultValue: 1, // 생성자 자신 포함
     },
+    created_by: {               // 컬럼명은 DB의 snake_case에 맞춤
+        type: DataTypes.INTEGER,
+        allowNull: true,          // onDelete: 'SET NULL'이므로 null 허용
+        references: { model: 'Users', key: 'id' },
+    },
 }, {
     tableName: 'Meetings',
     timestamps: true,
