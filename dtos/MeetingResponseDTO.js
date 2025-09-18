@@ -2,7 +2,7 @@
 
 
 class MeetingResponseDTO {
-  constructor(meeting, isParticipant, isScheduleConflict, isOwner) {
+  constructor(meeting, isParticipant, isScheduleConflict,creatorName, isOwner) {
       this.id = meeting.id;
       this.title = meeting.title;
       this.description = meeting.description;
