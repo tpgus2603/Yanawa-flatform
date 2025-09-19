@@ -239,12 +239,12 @@ class MeetingService {
         if (meeting.type === 'CLOSE') {
             throw new Error('이미 마감된 모임입니다.');
         }
-        if (meeting.time_idx_deadline !== undefined) {
-            const currentTimeIdx = this.getCurrentTimeIdx(); // 현재 시간 인덱스
-            if (currentTimeIdx >= meeting.time_idx_deadline) {
-                throw new Error('참가 신청이 마감되었습니다.');
-            }
-        }
+        // if (meeting.time_idx_deadline !== undefined) {
+        //     const currentTimeIdx = this.getCurrentTimeIdx(); // 현재 시간 인덱스
+        //     if (currentTimeIdx >= meeting.time_idx_deadline) {
+        //         throw new Error('참가 신청이 마감되었습니다.');
+        //     }
+        // }
         const existingParticipant = await MeetingParticipant.findOne({
             where: { meeting_id: meetingId, user_id: userId },
         });
